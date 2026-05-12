@@ -149,8 +149,19 @@
             </svg>
             <div class="tasks-count" id="dailies-count">0/7</div>
             <div class="tasks-subtitle">Today's Dailies</div>
+            <div style="display:flex; margin-top:12px; background:rgba(0,0,0,0.3); border-radius:6px; overflow:hidden;">
+              <button id="mode-default-btn" onclick="setDailyMode('default')" style="flex:1; border:none; background:#a855f7; color:#fff; font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Default</button>
+              <button id="mode-custom-btn" onclick="setDailyMode('custom')" style="flex:1; border:none; background:transparent; color:rgba(255,255,255,0.5); font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Custom</button>
+            </div>
           </div>
-          <div class="tasks-right" id="dailies-list"></div>
+          <div class="tasks-right">
+            <div id="dailies-list"></div>
+            <div id="custom-dailies-input" style="display:none; gap:6px; margin-top:10px;">
+              <input type="text" id="cd-time" class="add-task-input" placeholder="Time..." style="width:55px; padding:6px 8px; font-size:11px; margin:0; text-align:center;">
+              <input type="text" id="cd-name" class="add-task-input" placeholder="Task name..." onkeypress="if(event.key==='Enter') addCustomDaily()" style="flex:1; padding:6px 10px; font-size:11px; margin:0;">
+              <button class="add-task-input" style="width:45px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; padding:6px; font-size:11px; margin:0;" onclick="addCustomDaily()">Add</button>
+            </div>
+          </div>
         </div>
       </div>
 

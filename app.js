@@ -55,6 +55,8 @@ const MATH_SEM1 = {
 const MATH_SEM1_ALL = [...MATH_SEM1.dscc1];
 
 let S = {
+  dailyMode: "default",
+  customDailies: [],
   dailies: Array(DAILIES.length).fill(false),
   mathSem3: Array(MATH_SEM3_ALL.length).fill(false),
   mathSem1: Array(MATH_SEM1_ALL.length).fill(false),
@@ -78,7 +80,10 @@ function debouncedSave() {
 
 const checkIcon = '<svg viewBox="0 0 12 12"><polyline points="2.5 6 5 8.5 9.5 3.5"/></svg>';
 
-function countDailies() { return S.dailies.filter(Boolean).length; }
+function countDailies() { 
+  if (S.dailyMode === "custom") return S.customDailies.filter(function(d){return d.d}).length;
+  return S.dailies.filter(Boolean).length; 
+}
 
 function autoMarkToday() {
   var idx = TODAY_DAY - 1;
@@ -88,7 +93,8 @@ function autoMarkToday() {
 
 function updStats() {
   const cnt = countDailies();
-  const pct = Math.round(cnt / DAILIES.length * 100);
+  const total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+  const pct = Math.round(cnt / total * 100);
 
   document.getElementById("hero-pct").textContent = pct + "%";
   document.getElementById("hero-ring-progress").style.strokeDashoffset = 440 - (pct / 100) * 440;
@@ -116,20 +122,80 @@ function updStats() {
 }
 
 function renderDailies() {
-  document.getElementById("dailies-count").textContent = countDailies() + "/" + DAILIES.length;
+  var total = S.dailyMode === "custom" ? S.customDailies.length : DAILIES.length;
+  document.getElementById("dailies-count").textContent = countDailies() + "/" + total;
   var h = "";
-  DAILIES.forEach(function(d, i) {
-    var done = S.dailies[i];
-    h += '<div class="task-item" onclick="togDaily(' + i + ')">' +
-      '<div class="task-check ' + (done ? 'completed' : '') + '">' + (done ? checkIcon : '') + '</div>' +
-      '<div class="task-info"><div class="task-name" style="' + (done ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + d + '</div></div></div>';
-  });
+  
+  // Toggle UI
+  var defBtn = document.getElementById("mode-default-btn");
+  var cusBtn = document.getElementById("mode-custom-btn");
+  var cusInput = document.getElementById("custom-dailies-input");
+  
+  if (defBtn && cusBtn && cusInput) {
+    if (S.dailyMode === "custom") {
+      defBtn.style.background = "transparent";
+      defBtn.style.color = "rgba(255,255,255,0.5)";
+      cusBtn.style.background = "#a855f7";
+      cusBtn.style.color = "#fff";
+      cusInput.style.display = "flex";
+    } else {
+      defBtn.style.background = "#a855f7";
+      defBtn.style.color = "#fff";
+      cusBtn.style.background = "transparent";
+      cusBtn.style.color = "rgba(255,255,255,0.5)";
+      cusInput.style.display = "none";
+    }
+  }
+
+  if (S.dailyMode === "custom") {
+    S.customDailies.forEach(function(d, i) {
+      var timeHtml = d.t ? '<span style="font-size:10px; color:#a855f7; margin-left:8px; font-variant-numeric:tabular-nums; background:rgba(168,85,247,0.15); padding:2px 6px; border-radius:4px;">' + d.t + '</span>' : '';
+      h += '<div class="task-item" onclick="togCustomDaily(' + i + ')">' +
+        '<div class="task-check ' + (d.d ? 'completed' : '') + '">' + (d.d ? checkIcon : '') + '</div>' +
+        '<div class="task-info" style="display:flex; align-items:center;"><div class="task-name" style="' + (d.d ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + d.n + '</div>' + timeHtml + '</div>' +
+        '<div class="task-delete" onclick="event.stopPropagation();delCustomDaily(' + i + ')">x</div></div>';
+    });
+    if (S.customDailies.length === 0) {
+      h = '<div style="padding:20px; text-align:center; color:rgba(255,255,255,0.4); font-size:12px;">Your custom routine is empty. Add tasks below!</div>';
+    }
+  } else {
+    DAILIES.forEach(function(d, i) {
+      var done = S.dailies[i];
+      h += '<div class="task-item" onclick="togDaily(' + i + ')">' +
+        '<div class="task-check ' + (done ? 'completed' : '') + '">' + (done ? checkIcon : '') + '</div>' +
+        '<div class="task-info"><div class="task-name" style="' + (done ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + d + '</div></div></div>';
+    });
+  }
   document.getElementById("dailies-list").innerHTML = h;
 }
+
+function setDailyMode(mode) {
+  S.dailyMode = mode;
+  renderDailies();
+  updStats();
+  saveState();
+}
+
 function togDaily(i) { S.dailies[i] = !S.dailies[i]; renderDailies(); autoMarkToday(); updStats(); saveState(); }
+
+function addCustomDaily() {
+  var nameEl = document.getElementById("cd-name");
+  var timeEl = document.getElementById("cd-time");
+  var name = nameEl.value.trim();
+  var time = timeEl.value.trim();
+  if (!name) return;
+  S.customDailies.push({n: name, t: time, d: false});
+  nameEl.value = ""; timeEl.value = "";
+  renderDailies(); updStats(); saveState();
+}
+function togCustomDaily(i) { S.customDailies[i].d = !S.customDailies[i].d; renderDailies(); autoMarkToday(); updStats(); saveState(); }
+function delCustomDaily(i) { if (!confirm('Delete "' + S.customDailies[i].n + '"?')) return; S.customDailies.splice(i, 1); renderDailies(); updStats(); saveState(); }
+
 function resetDailies() {
   if (!confirm('Reset all dailies? This cannot be undone.')) return;
-  S.dailies = Array(DAILIES.length).fill(false); renderDailies(); autoMarkToday(); updStats(); saveState();
+  S.dailies = Array(DAILIES.length).fill(false);
+  S.customDailies.forEach(function(d) { d.d = false; });
+  renderDailies(); autoMarkToday(); updStats(); saveState();
 }
 
 function renderSem4() {
@@ -563,6 +629,7 @@ function loadState() {
         loaded.dailies = Array(DAILIES.length).fill(false);
         loaded.review = "";
         if (loaded.exercises) loaded.exercises = loaded.exercises.map(function(e) { return {n:e.n, s:e.s, done:false}; });
+        if (loaded.customDailies) loaded.customDailies = loaded.customDailies.map(function(d) { return {n:d.n, t:d.t, d:false}; });
       }
       // Handle month rollover
       var savedMonth = loaded.savedMonth;
@@ -593,6 +660,12 @@ function loadState() {
           newDailies[i] = loaded.dailies[i];
         }
         loaded.dailies = newDailies;
+      }
+      
+      if (!loaded.dailyMode) loaded.dailyMode = "default";
+      if (!loaded.customDailies) {
+        // Initialize custom dailies with default DAILIES
+        loaded.customDailies = DAILIES.map(function(d) { return { n: d, t: "", d: false }; });
       }
       
       for (var key in loaded) { S[key] = loaded[key]; }

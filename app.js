@@ -8,8 +8,18 @@ const TODAY_DAY = NOW.getDate();
 const TODAY_KEY = "rd-v7-" + CURRENT_YEAR + "-" + (CURRENT_MONTH + 1) + "-" + TODAY_DAY;
 
 const DAILIES = [
-  "Wake up on time", "Workout (PPL + Abs)", "Reading block",
-  "Python practice", "Study block done", "Break (30 min)", "Video editing", "Night review"
+  "Wake up", "Workout", "Reading",
+  "Python", "Break 15 min", "Revise", "Break", "Sleep"
+];
+const DEFAULT_CUSTOM_DAILIES = [
+  { n: "Wake up", t: "07:00 AM", d: false },
+  { n: "Workout", t: "08:00 AM", d: false },
+  { n: "Reading", t: "09:00 AM", d: false },
+  { n: "Python", t: "01:00 PM", d: false },
+  { n: "Break 15 min", t: "04:00 PM", d: false },
+  { n: "Revise", t: "06:00 PM", d: false },
+  { n: "Break", t: "09:00 PM", d: false },
+  { n: "Sleep", t: "10:30 PM", d: false }
 ];
 
 // PPL rotation: 0=Push, 1=Pull, 2=Legs, repeats
@@ -148,9 +158,11 @@ function renderDailies() {
   }
 
   if (S.dailyMode === "custom") {
+    var dragHandle = '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2" style="width:14px; height:14px; margin-right:8px; cursor:grab; flex-shrink:0;"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>';
     S.customDailies.forEach(function(d, i) {
       var timeHtml = d.t ? '<span style="font-size:10px; color:#a855f7; margin-left:8px; font-variant-numeric:tabular-nums; background:rgba(168,85,247,0.15); padding:2px 6px; border-radius:4px;">' + d.t + '</span>' : '';
-      h += '<div class="task-item" onclick="togCustomDaily(' + i + ')">' +
+      h += '<div class="task-item" draggable="true" ondragstart="cdDragStart(event, ' + i + ')" ondragover="cdDragOver(event)" ondrop="cdDrop(event, ' + i + ')" onclick="togCustomDaily(' + i + ')">' +
+        dragHandle +
         '<div class="task-check ' + (d.d ? 'completed' : '') + '">' + (d.d ? checkIcon : '') + '</div>' +
         '<div class="task-info" style="display:flex; align-items:center;"><div class="task-name" style="' + (d.d ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + d.n + '</div>' + timeHtml + '</div>' +
         '<div class="task-delete" onclick="event.stopPropagation();delCustomDaily(' + i + ')">x</div></div>';
@@ -177,6 +189,26 @@ function setDailyMode(mode) {
 }
 
 function togDaily(i) { S.dailies[i] = !S.dailies[i]; renderDailies(); autoMarkToday(); updStats(); saveState(); }
+
+// Drag and drop handlers
+let cdDragIndex = -1;
+function cdDragStart(e, i) {
+  cdDragIndex = i;
+  e.dataTransfer.effectAllowed = "move";
+}
+function cdDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+}
+function cdDrop(e, targetIdx) {
+  e.preventDefault();
+  if (cdDragIndex === -1 || cdDragIndex === targetIdx) return;
+  var movedItem = S.customDailies.splice(cdDragIndex, 1)[0];
+  S.customDailies.splice(targetIdx, 0, movedItem);
+  cdDragIndex = -1;
+  renderDailies();
+  saveState();
+}
 
 function addCustomDaily() {
   var nameEl = document.getElementById("cd-name");
@@ -208,9 +240,9 @@ function togCustomDaily(i) { S.customDailies[i].d = !S.customDailies[i].d; rende
 function delCustomDaily(i) { if (!confirm('Delete "' + S.customDailies[i].n + '"?')) return; S.customDailies.splice(i, 1); renderDailies(); updStats(); saveState(); }
 
 function resetDailies() {
-  if (!confirm('Reset all dailies? This cannot be undone.')) return;
+  if (!confirm('Reset all dailies to default? This will overwrite your custom tasks with the default schedule.')) return;
   S.dailies = Array(DAILIES.length).fill(false);
-  S.customDailies.forEach(function(d) { d.d = false; });
+  S.customDailies = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_DAILIES));
   renderDailies(); autoMarkToday(); updStats(); saveState();
 }
 
@@ -679,9 +711,9 @@ function loadState() {
       }
       
       if (!loaded.dailyMode) loaded.dailyMode = "default";
-      if (!loaded.customDailies) {
+      if (!loaded.customDailies || loaded.customDailies.length === 0 || loaded.customDailies[0].n === "Wake up on time") {
         // Initialize custom dailies with default DAILIES
-        loaded.customDailies = DAILIES.map(function(d) { return { n: d, t: "", d: false }; });
+        loaded.customDailies = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_DAILIES));
       }
       
       for (var key in loaded) { S[key] = loaded[key]; }

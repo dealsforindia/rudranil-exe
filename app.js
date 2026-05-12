@@ -45,14 +45,12 @@ let S = {
   dailies: Array(DAILIES.length).fill(false),
   mathSem3: Array(MATH_SEM3_ALL.length).fill(false),
   mathSem1: Array(MATH_SEM1_ALL.length).fill(false),
-  sem: ["DSCC-5 Theory of Real Functions", "DSCC-6 Mechanics I", "DSCC-7 Multivariate & PDE", "DSCC-8 Group Theory II & Ring Theory"],
-  semD: Array(4).fill(false),
+  sem4: { dscc5: [], dscc6: [], dscc7: [], dscc8: [] },
   aff: ["Post deals", "Bot check", "EarnKaro links"],
   affD: Array(3).fill(false),
   exercises: [{n:"Push-ups",s:"3x15",done:false},{n:"Pull-ups",s:"3x8",done:false},{n:"Plank",s:"3x60s",done:false}],
   fsVid: 35, pyVid: 23,
   month: Array(MONTH_DAYS).fill(false),
-  streak: 0,
   streak: 0,
   scratchpad: "",
   review: "",
@@ -124,25 +122,53 @@ function resetDailies() {
 }
 
 function renderSem4() {
-  var cnt = S.semD.filter(Boolean).length;
-  document.getElementById("sem4-count").textContent = cnt + "/" + S.sem.length;
+  var papers = [
+    {id: 'dscc5', title: 'DSCC-5 · Theory of Real Functions'},
+    {id: 'dscc6', title: 'DSCC-6 · Mechanics I'},
+    {id: 'dscc7', title: 'DSCC-7 · Multivariate & PDE'},
+    {id: 'dscc8', title: 'DSCC-8 · Group/Ring Theory'}
+  ];
+  
+  var totalTasks = 0;
+  var doneTasks = 0;
   var h = "";
-  S.sem.forEach(function(t, i) {
-    var done = S.semD[i];
-    h += '<div class="task-item" onclick="togSem(' + i + ')">' +
-      '<div class="task-check ' + (done ? 'completed' : '') + '">' + (done ? checkIcon : '') + '</div>' +
-      '<div class="task-info"><div class="task-name" style="' + (done ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + t + '</div></div>' +
-      '<div class="task-delete" onclick="event.stopPropagation();delSem(' + i + ')">x</div></div>';
+  
+  papers.forEach(function(p) {
+    var tasks = S.sem4[p.id] || [];
+    totalTasks += tasks.length;
+    var paperDone = 0;
+    
+    var listH = "";
+    tasks.forEach(function(t, i) {
+      if (t.d) { doneTasks++; paperDone++; }
+      listH += '<div class="task-item" onclick="togSem4(\'' + p.id + '\', ' + i + ')">' +
+        '<div class="task-check ' + (t.d ? 'completed' : '') + '">' + (t.d ? checkIcon : '') + '</div>' +
+        '<div class="task-info"><div class="task-name" style="' + (t.d ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + t.n + '</div></div>' +
+        '<div class="task-delete" onclick="event.stopPropagation();delSem4(\'' + p.id + '\', ' + i + ')">x</div></div>';
+    });
+    
+    h += '<div class="sem4-paper-group" style="margin-bottom:16px;">' +
+         '<div class="pill-label" style="display:flex; justify-content:space-between; margin-bottom:8px; color:rgba(255,255,255,0.7);">' + p.title + ' <span style="opacity:0.5">' + paperDone + '/' + tasks.length + '</span></div>' +
+         '<div class="sem4-tasks" style="margin-bottom:8px;">' + listH + '</div>' +
+         '<div style="display:flex; gap:8px;">' +
+           '<input type="text" id="sem-new-' + p.id + '" class="add-task-input" placeholder="Add task..." onkeypress="if(event.key===\'Enter\') addSem4(\'' + p.id + '\')" style="flex:1; margin-top:0; font-size:11px; padding:8px 12px;">' +
+           '<button class="add-task-input" style="width:50px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; margin-top:0; padding:8px;" onclick="addSem4(\'' + p.id + '\')">Add</button>' +
+         '</div></div>';
   });
+  
+  document.getElementById("sem4-count").textContent = doneTasks + "/" + totalTasks;
   document.getElementById("sem4-list").innerHTML = h;
 }
-function togSem(i) { S.semD[i] = !S.semD[i]; renderSem4(); updStats(); saveState(); }
-function delSem(i) { if (!confirm('Delete "' + S.sem[i] + '"?')) return; S.sem.splice(i, 1); S.semD.splice(i, 1); renderSem4(); updStats(); saveState(); }
-function addSemTask() {
-  var inp = document.getElementById("sem-new-input");
+
+function togSem4(pId, i) { S.sem4[pId][i].d = !S.sem4[pId][i].d; renderSem4(); updStats(); saveState(); }
+function delSem4(pId, i) { if (!confirm('Delete "' + S.sem4[pId][i].n + '"?')) return; S.sem4[pId].splice(i, 1); renderSem4(); updStats(); saveState(); }
+function addSem4(pId) {
+  var inp = document.getElementById("sem-new-" + pId);
   var v = inp.value.trim();
   if (!v) return;
-  S.sem.push(v); S.semD.push(false); inp.value = "";
+  if (!S.sem4[pId]) S.sem4[pId] = [];
+  S.sem4[pId].push({n: v, d: false});
+  inp.value = "";
   renderSem4(); updStats(); saveState();
 }
 
@@ -406,6 +432,62 @@ function renderPPLIndicator() {
   if (el) el.textContent = "Today: " + getTodayPPL() + " Day + Abs";
 }
 
+// === POMODORO TIMER ===
+let pomoInterval = null;
+let pomoTimeLeft = 25 * 60;
+let pomoMode = "focus";
+
+function formatPomoTime(secs) {
+  var m = Math.floor(secs / 60);
+  var s = secs % 60;
+  return m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
+}
+
+function updatePomoDisplay() {
+  var el = document.getElementById("pomodoro-time");
+  if (el) el.textContent = formatPomoTime(pomoTimeLeft);
+}
+
+function startPomodoro() {
+  clearInterval(pomoInterval);
+  pomoMode = "focus";
+  pomoTimeLeft = 25 * 60;
+  document.getElementById("pomo-status").textContent = "Focusing...";
+  document.getElementById("pomo-start").textContent = "Restart Focus";
+  updatePomoDisplay();
+  pomoInterval = setInterval(pomoTick, 1000);
+}
+
+function startPomoBreak() {
+  clearInterval(pomoInterval);
+  pomoMode = "break";
+  pomoTimeLeft = 5 * 60;
+  document.getElementById("pomo-status").textContent = "Taking a break...";
+  updatePomoDisplay();
+  pomoInterval = setInterval(pomoTick, 1000);
+}
+
+function resetPomodoro() {
+  clearInterval(pomoInterval);
+  pomoMode = "focus";
+  pomoTimeLeft = 25 * 60;
+  document.getElementById("pomo-status").textContent = "Ready to focus.";
+  document.getElementById("pomo-start").textContent = "Start Focus";
+  updatePomoDisplay();
+}
+
+function pomoTick() {
+  if (pomoTimeLeft > 0) {
+    pomoTimeLeft--;
+    updatePomoDisplay();
+  } else {
+    clearInterval(pomoInterval);
+    document.getElementById("pomo-status").textContent = pomoMode === "focus" ? "Focus session complete! Take a break." : "Break complete! Time to focus.";
+    var audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    audio.play().catch(function(){});
+  }
+}
+
 // === MINI GEMINI AI ===
 const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
 let aiHistory = [];
@@ -460,7 +542,7 @@ async function sendAI() {
     var reqBody = {
       contents: aiHistory,
       systemInstruction: {
-        parts: [{text: "You are Rudranil's workout AI assistant. You help plan his workouts. His current workout list contains: " + currentList + ". To modify his list, output a JSON array of actions wrapped in ```json block like this: ```json [{\"action\":\"add\", \"name\":\"Squats\", \"sets\":\"3x10\"}, {\"action\":\"delete\", \"name\":\"Push-ups\"}] ```. Only use this JSON if you are modifying his workout. Keep your regular text replies very short and concise (under 2 sentences)."}]
+        parts: [{text: "You are Rudranil's productivity AI assistant. \nHis current workout list contains: " + currentList + ".\nHis 4th Sem tasks are: " + JSON.stringify(S.sem4) + "\nTo modify his workout, output JSON: ```json [{\"action\":\"add\", \"name\":\"Squats\", \"sets\":\"3x10\"}, {\"action\":\"delete\", \"name\":\"Push-ups\"}] ```.\nTo add a 4th sem task, output JSON: ```json [{\"action\":\"add_sem4\", \"paper\":\"dscc5\", \"name\":\"Read chapter 1\"}] ``` (Papers available: dscc5, dscc6, dscc7, dscc8).\nOnly output JSON if modifying state. Keep regular text replies under 2 sentences."}]
       }
     };
     
@@ -487,9 +569,14 @@ async function sendAI() {
           } else if (a.action === "delete") {
             var idx = S.exercises.findIndex(function(e) { return e.n.toLowerCase() === a.name.toLowerCase(); });
             if (idx > -1) { S.exercises.splice(idx, 1); changed = true; }
+          } else if (a.action === "add_sem4") {
+            if (S.sem4[a.paper]) {
+              S.sem4[a.paper].push({n: a.name, d: false});
+              changed = true;
+            }
           }
         });
-        if (changed) { renderEx(); updStats(); saveState(); }
+        if (changed) { renderEx(); renderSem4(); updStats(); saveState(); }
       } catch(e) {}
       replyText = replyText.replace(/```json\s*([\s\S]*?)\s*```/, "").trim();
     }
@@ -533,6 +620,11 @@ function loadState() {
       // Ensure sem3/sem1 backlog arrays exist
       if (!loaded.mathSem3) loaded.mathSem3 = Array(MATH_SEM3_ALL.length).fill(false);
       if (!loaded.mathSem1) loaded.mathSem1 = Array(MATH_SEM1_ALL.length).fill(false);
+      
+      // Migrate sem to sem4 if necessary
+      if (!loaded.sem4) {
+        loaded.sem4 = { dscc5: [], dscc6: [], dscc7: [], dscc8: [] };
+      }
       
       // Ensure dailies array length matches current DAILIES (handles new tasks added)
       if (loaded.dailies && loaded.dailies.length !== DAILIES.length) {

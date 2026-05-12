@@ -182,7 +182,23 @@ function addCustomDaily() {
   var nameEl = document.getElementById("cd-name");
   var timeEl = document.getElementById("cd-time");
   var name = nameEl.value.trim();
-  var time = timeEl.value.trim();
+  var timeRaw = timeEl.value.trim();
+  var time = "";
+  
+  if (timeRaw) {
+    var parts = timeRaw.split(':');
+    if (parts.length === 2) {
+      var h = parseInt(parts[0], 10);
+      var m = parts[1];
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      if (h === 0) h = 12;
+      time = h + ':' + m + ' ' + ampm;
+    } else {
+      time = timeRaw;
+    }
+  }
+
   if (!name) return;
   S.customDailies.push({n: name, t: time, d: false});
   nameEl.value = ""; timeEl.value = "";

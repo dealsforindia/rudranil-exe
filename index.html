@@ -190,7 +190,19 @@
             <input type="file" accept=".json" onchange="importBackup(event)" style="display:none">
           </label>
         </div>
-        <div class="month-label">April Consistency</div>
+        <div class="cal-title">
+          <span class="cal-title-text" id="cal-month-title">May 2026</span>
+          <span class="cal-title-stats" id="cal-stats">0 productive days</span>
+        </div>
+        <div class="cal-header-row">
+          <div class="cal-header-cell">M</div>
+          <div class="cal-header-cell">T</div>
+          <div class="cal-header-cell">W</div>
+          <div class="cal-header-cell">T</div>
+          <div class="cal-header-cell">F</div>
+          <div class="cal-header-cell">S</div>
+          <div class="cal-header-cell">S</div>
+        </div>
         <div class="month-grid" id="mgrid"></div>
       </div>
 
@@ -289,6 +301,17 @@
       </div>
     </div>
   </main>
+  <!-- Day Detail Modal -->
+  <div class="cal-modal-overlay" id="cal-modal-overlay" onclick="closeDayDetail(event)">
+    <div class="cal-modal">
+      <div class="cal-modal-date" id="cal-modal-date">May 12, 2026</div>
+      <div class="cal-modal-score" id="cal-modal-score">0% — No Data</div>
+      <div class="cal-modal-bar-wrap"><div class="cal-modal-bar" id="cal-modal-bar" style="width:0%"></div></div>
+      <div class="cal-modal-summary" id="cal-modal-summary">No activity recorded for this day.</div>
+      <button class="cal-modal-close" onclick="closeDayDetail()">Close</button>
+    </div>
+  </div>
+
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

@@ -131,7 +131,11 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
             </div>
-            <div class="ai-hint">Can add/remove exercises, suggest workouts, plan your day</div>
+            <div class="ai-hint" style="cursor:pointer;" onclick="toggleAIKeySetup()">Can add/remove exercises, suggest workouts, plan your day. Click to set API key.</div>
+            <div class="ai-key-setup" id="ai-key-setup" style="display:none; margin-top:8px;">
+              <input type="password" id="ai-key-in" class="add-task-input" placeholder="Paste Gemini API Key..." style="margin-top:0;">
+              <button class="action-btn btn-sync" onclick="saveAIKey()" style="padding:10px 14px; font-size:12px; justify-content:center;">Save Key</button>
+            </div>
           </div>
         </div>
       </div>

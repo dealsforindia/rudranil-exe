@@ -666,22 +666,48 @@ function renderPPLIndicator() {
 }
 
 // === MINI GEMINI AI ===
-const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
+let GEMINI_KEY = localStorage.getItem("rudranil-gemini-key") || "";
 let aiHistory = [];
 
 function initAI() {
   updateAIStatus();
+  if (!GEMINI_KEY) {
+    var setup = document.getElementById("ai-key-setup");
+    if (setup) setup.style.display = "flex";
+  }
+}
+
+function saveAIKey() {
+  var inEl = document.getElementById("ai-key-in");
+  if (inEl && inEl.value.trim()) {
+    GEMINI_KEY = inEl.value.trim();
+    localStorage.setItem("rudranil-gemini-key", GEMINI_KEY);
+    document.getElementById("ai-key-setup").style.display = "none";
+    updateAIStatus();
+    inEl.value = "";
+  }
+}
+
+function toggleAIKeySetup() {
+  var setup = document.getElementById("ai-key-setup");
+  if (setup) setup.style.display = setup.style.display === "none" ? "flex" : "none";
 }
 
 function updateAIStatus() {
   var dot = document.getElementById("ai-dot");
   var text = document.getElementById("ai-status-text");
   if (!dot || !text) return;
-  if (!navigator.onLine) {
+  if (!GEMINI_KEY) {
     dot.className = "ai-status-dot";
+    dot.style.background = "#f59e0b";
+    text.textContent = "needs api key";
+  } else if (!navigator.onLine) {
+    dot.className = "ai-status-dot";
+    dot.style.background = "#ff4757";
     text.textContent = "offline";
   } else {
     dot.className = "ai-status-dot online";
+    dot.style.background = "#2ecc40";
     text.textContent = "online";
   }
 }

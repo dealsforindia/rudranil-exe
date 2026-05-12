@@ -121,6 +121,17 @@
               <span class="ai-status-dot" id="ai-dot"></span>
               <span id="ai-status-text">offline</span>
             </div>
+            <button class="ai-settings-btn" onclick="toggleAISetup()" title="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+          </div>
+          <!-- AI Setup Area -->
+          <div id="ai-setup-area" class="ai-key-setup" style="display:none; margin-bottom:12px;">
+            <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px;">Enter your Gemini API Key to continue using the assistant.</div>
+            <div class="ai-input-row">
+              <input type="password" id="ai-key-input" class="add-task-input" placeholder="AIzaSy..." style="margin-top:0; flex:1; font-family:monospace;">
+              <button class="ai-send-btn" onclick="saveAIKey()" style="padding:8px 12px; font-size:12px; border-radius:8px;">Save</button>
+            </div>
           </div>
           <!-- Chat Area -->
           <div id="ai-chat-area" class="ai-chat-area">
@@ -131,11 +142,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
               </button>
             </div>
-            <div class="ai-hint" style="cursor:pointer;" onclick="toggleAIKeySetup()">Can add/remove exercises, suggest workouts, plan your day. Click to set API key.</div>
-            <div class="ai-key-setup" id="ai-key-setup" style="display:none; margin-top:8px;">
-              <input type="password" id="ai-key-in" class="add-task-input" placeholder="Paste Gemini API Key..." style="margin-top:0;">
-              <button class="action-btn btn-sync" onclick="saveAIKey()" style="padding:10px 14px; font-size:12px; justify-content:center;">Save Key</button>
-            </div>
+            <div class="ai-hint">Can add/remove exercises, suggest workouts, plan your day</div>
           </div>
         </div>
       </div>
@@ -231,10 +238,7 @@
           <div class="fluid-bubble-wrap">
             <div style="text-align:center;">
               <div class="fluid-bubble">
-                <div class="fluid-liquid" id="fluid-sem3">
-                  <div class="fluid-wave fluid-wave-1"></div>
-                  <div class="fluid-wave fluid-wave-2"></div>
-                </div>
+                <div class="fluid-liquid" id="fluid-sem3"></div>
                 <div class="fluid-pct" id="fluid-sem3-pct">0%</div>
               </div>
               <div class="fluid-label">Sem 3 Progress</div>
@@ -267,10 +271,7 @@
           <div class="fluid-bubble-wrap">
             <div style="text-align:center;">
               <div class="fluid-bubble">
-                <div class="fluid-liquid" id="fluid-sem1">
-                  <div class="fluid-wave fluid-wave-1"></div>
-                  <div class="fluid-wave fluid-wave-2"></div>
-                </div>
+                <div class="fluid-liquid" id="fluid-sem1"></div>
                 <div class="fluid-pct" id="fluid-sem1-pct">0%</div>
               </div>
               <div class="fluid-label">Sem 1 Progress</div>

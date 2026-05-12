@@ -249,6 +249,14 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
 .ai-status-dot.typing { background:#f39c12; box-shadow:0 0 4px rgba(243,156,18,0.5); animation: pulse 1s infinite; }
 
 .ai-key-setup { display:flex; flex-direction:column; gap:8px; }
+.ai-settings-btn {
+  background: transparent; border: none; color: rgba(255,255,255,0.4);
+  cursor: pointer; padding: 4px; border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+.ai-settings-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
 .ai-chat-area { display:flex; flex-direction:column; gap:12px; }
 .ai-messages {
   max-height: 180px; overflow-y:auto;
@@ -854,38 +862,26 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
     rgba(30, 64, 175, 0.9) 0%, 
     rgba(56, 139, 255, 0.85) 40%,
     rgba(99, 179, 255, 0.8) 70%,
-    rgba(56, 139, 255, 0.9) 100%
+    rgba(56, 139, 255, 0.95) 100%
   );
+  box-shadow: inset -5px 0 15px rgba(255,255,255,0.2);
+  overflow: hidden;
 }
 
-/* Wave layers on the RIGHT edge of the liquid */
-.fluid-wave {
+/* Shimmer effect inside the liquid */
+.fluid-liquid::after {
+  content: '';
   position: absolute;
-  right: -20px;
-  top: 50%;
-  width: 40px;
-  height: 200%;
-  border-radius: 43%;
-}
-.fluid-wave-1 {
-  background: rgba(56, 139, 255, 0.5);
-  animation: liquidWaveCapsule1 3s linear infinite;
-}
-.fluid-wave-2 {
-  background: rgba(99, 179, 255, 0.3);
-  animation: liquidWaveCapsule2 4s linear infinite;
-  right: -16px;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: liquidShimmer 2.5s infinite;
 }
 
-@keyframes liquidWaveCapsule1 {
-  0%   { transform: translate(0, -50%) rotate(0deg); }
-  50%  { transform: translate(-3px, -50%) rotate(180deg); }
-  100% { transform: translate(0, -50%) rotate(360deg); }
-}
-@keyframes liquidWaveCapsule2 {
-  0%   { transform: translate(0, -50%) rotate(0deg); }
-  50%  { transform: translate(2px, -50%) rotate(-180deg); }
-  100% { transform: translate(0, -50%) rotate(-360deg); }
+@keyframes liquidShimmer {
+  100% { left: 200%; }
 }
 
 /* Percentage text overlay */

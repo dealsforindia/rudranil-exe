@@ -78,7 +78,8 @@ let S = {
   scratchpad: "",
   review: "",
   savedKey: "",
-  savedMonth: CURRENT_MONTH
+  savedMonth: CURRENT_MONTH,
+  aiKey: ""
 };
 
 // Debounced save
@@ -471,15 +472,28 @@ function openDayDetail(idx) {
   // Summary text
   var summary = '';
   if (dayNum === TODAY_DAY) {
-    var total = S.dailyMode === 'custom' ? S.customDailies.length : DAILIES.length;
+    var total = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
     var done = countDailies();
-    summary = 'Today: ' + done + '/' + total + ' dailies completed.';
+    var listHTML = '<ul style="margin:8px 0; padding-left:20px; list-style:none;">';
+    
+    if (S.dailyMode === 'custom') {
+      S.customDailies.forEach(function(d) {
+        listHTML += '<li>' + (d.d ? '✅' : '❌') + ' ' + d.n + '</li>';
+      });
+    } else {
+      DAILIES.forEach(function(d, idx) {
+        listHTML += '<li>' + (S.dailies[idx] ? '✅' : '❌') + ' ' + d.n + '</li>';
+      });
+    }
+    listHTML += '</ul>';
+    
+    summary = 'Today: ' + done + '/' + total + ' dailies completed.<br>' + listHTML;
   } else if (pct > 0) {
     summary = 'You achieved ' + pct + '% of your daily goals.';
   } else {
     summary = 'No activity was recorded for this day.';
   }
-  document.getElementById('cal-modal-summary').textContent = summary;
+  document.getElementById('cal-modal-summary').innerHTML = summary;
   
   document.getElementById('cal-modal-overlay').classList.add('active');
 }
@@ -666,48 +680,35 @@ function renderPPLIndicator() {
 }
 
 // === MINI GEMINI AI ===
-let GEMINI_KEY = localStorage.getItem("rudranil-gemini-key") || "";
+const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
 let aiHistory = [];
 
-function initAI() {
-  updateAIStatus();
-  if (!GEMINI_KEY) {
-    var setup = document.getElementById("ai-key-setup");
-    if (setup) setup.style.display = "flex";
-  }
+function toggleAISetup() {
+  var area = document.getElementById("ai-setup-area");
+  area.style.display = area.style.display === "none" ? "flex" : "none";
+  if (S.aiKey) document.getElementById("ai-key-input").value = S.aiKey;
 }
 
 function saveAIKey() {
-  var inEl = document.getElementById("ai-key-in");
-  if (inEl && inEl.value.trim()) {
-    GEMINI_KEY = inEl.value.trim();
-    localStorage.setItem("rudranil-gemini-key", GEMINI_KEY);
-    document.getElementById("ai-key-setup").style.display = "none";
-    updateAIStatus();
-    inEl.value = "";
-  }
+  var val = document.getElementById("ai-key-input").value.trim();
+  S.aiKey = val;
+  debouncedSave();
+  toggleAISetup();
 }
 
-function toggleAIKeySetup() {
-  var setup = document.getElementById("ai-key-setup");
-  if (setup) setup.style.display = setup.style.display === "none" ? "flex" : "none";
+function initAI() {
+  updateAIStatus();
 }
 
 function updateAIStatus() {
   var dot = document.getElementById("ai-dot");
   var text = document.getElementById("ai-status-text");
   if (!dot || !text) return;
-  if (!GEMINI_KEY) {
+  if (!navigator.onLine) {
     dot.className = "ai-status-dot";
-    dot.style.background = "#f59e0b";
-    text.textContent = "needs api key";
-  } else if (!navigator.onLine) {
-    dot.className = "ai-status-dot";
-    dot.style.background = "#ff4757";
     text.textContent = "offline";
   } else {
     dot.className = "ai-status-dot online";
-    dot.style.background = "#2ecc40";
     text.textContent = "online";
   }
 }
@@ -726,7 +727,13 @@ function renderAIMessage(role, text) {
 async function sendAI() {
   var inp = document.getElementById("ai-input");
   var msg = inp.value.trim();
-  if (!msg || !GEMINI_KEY) return;
+  var keyToUse = S.aiKey || GEMINI_KEY;
+  
+  if (!msg) return;
+  if (!keyToUse) {
+    renderAIMessage("ai", "API Key missing. Please open Settings (⚙) and add your Gemini API Key.");
+    return;
+  }
   
   inp.value = "";
   renderAIMessage("user", msg);
@@ -749,7 +756,7 @@ async function sendAI() {
       }
     };
     
-    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + GEMINI_KEY, {
+    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + keyToUse, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(reqBody)
@@ -758,7 +765,7 @@ async function sendAI() {
     if (!res.ok) {
       var errData = await res.json();
       console.error("Gemini API Error Data:", errData);
-      throw new Error(errData.error ? errData.error.message : "API Error");
+      throw new Error(errData.error && errData.error.message ? errData.error.message : "API Key Error or Rate Limit Exceeded.");
     }
     var data = await res.json();
     var replyText = data.candidates[0].content.parts[0].text;
@@ -822,6 +829,7 @@ function loadState() {
       if (typeof loaded.streak === 'undefined') loaded.streak = 0;
       if (typeof loaded.scratchpad === 'undefined') loaded.scratchpad = "";
       if (typeof loaded.review === 'undefined') loaded.review = "";
+      if (typeof loaded.aiKey === 'undefined') loaded.aiKey = "";
       // Ensure month array matches current month length
       if (!loaded.month || loaded.month.length !== MONTH_DAYS) {
         loaded.month = Array(MONTH_DAYS).fill(0);

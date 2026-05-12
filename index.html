@@ -99,11 +99,44 @@
       <div class="card tasks-card">
         <div class="tasks-inner">
           <div class="progress-header" style="margin-bottom:0;"><span class="progress-title">Workout Matrix</span></div>
+          <div class="ppl-indicator" id="ppl-day-label" style="font-size:12px; font-weight:700; color:#e8a0bf; margin:6px 0 4px; letter-spacing:0.04em;">Today: Push Day + Abs</div>
           <div class="tasks-right" id="ex-list"></div>
           <div style="display:flex; gap:10px;">
             <input type="text" id="ex-name-in" class="add-task-input" placeholder="Exercise...">
             <input type="text" id="ex-sets-in" class="add-task-input" placeholder="Sets" style="width:80px;">
             <button class="add-task-input" style="width:60px; cursor:pointer; background:rgba(255,255,255,0.1); border:none;" onclick="addEx()">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MINI GEMINI AI ASSISTANT -->
+      <div class="card ai-card">
+        <div class="ai-inner">
+          <div class="ai-header">
+            <div class="ai-logo">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span class="ai-title">Gemini Assistant</span>
+            <div class="ai-status" id="ai-status">
+              <span class="ai-status-dot" id="ai-dot"></span>
+              <span id="ai-status-text">offline</span>
+            </div>
+          </div>
+          <!-- API Key Setup (shown if no key) -->
+          <div id="ai-key-setup" class="ai-key-setup">
+            <input type="password" id="ai-key-input" class="add-task-input" placeholder="Paste Gemini API key..." style="font-size:11px;">
+            <button class="ai-send-btn" onclick="saveAIKey()" style="margin-top:6px; width:100%;">Connect</button>
+          </div>
+          <!-- Chat Area (shown when key exists) -->
+          <div id="ai-chat-area" class="ai-chat-area" style="display:none;">
+            <div class="ai-messages" id="ai-messages"></div>
+            <div class="ai-input-row">
+              <input type="text" id="ai-input" class="add-task-input" placeholder="Plan my workout..." onkeypress="if(event.key==='Enter') sendAI()" style="margin-top:0; flex:1;">
+              <button class="ai-send-btn" onclick="sendAI()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+            <div class="ai-hint">Can add/remove exercises, suggest workouts, plan your day</div>
           </div>
         </div>
       </div>
@@ -163,25 +196,46 @@
           </div>
           <div class="tasks-right">
             <div id="sem4-list"></div>
-            <input type="text" id="sem-new-input" class="add-task-input" placeholder="Add assignment..." onkeypress="if(event.key==='Enter') addSemTask()">
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="sem-new-input" class="add-task-input" placeholder="Add assignment..." onkeypress="if(event.key==='Enter') addSemTask()" style="flex:1;">
+              <button class="add-task-input" style="width:60px; cursor:pointer; background:rgba(255,255,255,0.1); border:none;" onclick="addSemTask()">Add</button>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- SEM 3 BACKLOGS -->
       <div class="card tasks-card">
         <div class="tasks-inner">
-          <div class="progress-header" style="margin-bottom:10px;"><span class="progress-title">Math Backlogs</span></div>
-          <div class="pill-group">
-            <div class="pill-label">Real Analysis</div>
-            <div class="pill-container" id="pills-ra"></div>
+          <div class="progress-header" style="margin-bottom:4px;">
+            <span class="progress-title">📚 Sem 3 Backlogs</span>
+            <span id="sem3-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/18 topics</span>
           </div>
           <div class="pill-group">
-            <div class="pill-label">ODE</div>
-            <div class="pill-container" id="pills-ode"></div>
+            <div class="pill-label">DSCC-3 · Real Analysis</div>
+            <div class="pill-container" id="pills-dscc3"></div>
           </div>
           <div class="pill-group">
-            <div class="pill-label">Linear Programming</div>
-            <div class="pill-container" id="pills-lp"></div>
+            <div class="pill-label">DSCC-4 · ODE & Group Theory I</div>
+            <div class="pill-container" id="pills-dscc4"></div>
+          </div>
+          <div class="pill-group">
+            <div class="pill-label">SEC-3 · Linear Programming & Games</div>
+            <div class="pill-container" id="pills-sec3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEM 1 BACKLOGS -->
+      <div class="card tasks-card">
+        <div class="tasks-inner">
+          <div class="progress-header" style="margin-bottom:4px;">
+            <span class="progress-title">📖 Sem 1 Backlogs</span>
+            <span id="sem1-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/6 topics</span>
+          </div>
+          <div class="pill-group">
+            <div class="pill-label">DSCC-1 · Calculus, Geometry & Vectors</div>
+            <div class="pill-container" id="pills-dscc1"></div>
           </div>
         </div>
       </div>

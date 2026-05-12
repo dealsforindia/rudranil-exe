@@ -363,17 +363,7 @@ function addEx() {
   renderEx(); updStats(); saveState();
 }
 
-function renderAff() {
-  var h = "";
-  S.aff.forEach(function(t, i) {
-    var done = S.affD[i];
-    h += '<div class="task-item" onclick="togAff(' + i + ')">' +
-      '<div class="task-check ' + (done ? 'completed' : '') + '">' + (done ? checkIcon : '') + '</div>' +
-      '<div class="task-info"><div class="task-name" style="' + (done ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + t + '</div></div></div>';
-  });
-  document.getElementById("aff-list").innerHTML = h;
-}
-function togAff(i) { S.affD[i] = !S.affD[i]; renderAff(); updStats(); saveState(); }
+
 
 function renderMonth() {
   // Update month label dynamically
@@ -544,7 +534,7 @@ function saveState() {
 }
 
 function renderAll() {
-  renderDailies(); renderSem3(); renderSem1(); renderSem4(); renderEx(); renderAff(); renderMonth();
+  renderDailies(); renderSem3(); renderSem1(); renderSem4(); renderEx(); renderMonth();
   renderPPLIndicator();
   calcStreak(); updStats();
   document.getElementById("scratchpad").value = S.scratchpad || "";

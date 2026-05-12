@@ -454,10 +454,13 @@ async function sendAI() {
   aiHistory.push({role: "user", parts: [{text: msg}]});
   
   try {
+    var currentList = S.exercises.map(function(e) { return e.n + " (" + e.s + ")"; }).join(", ");
+    if (!currentList) currentList = "Empty";
+    
     var reqBody = {
       contents: aiHistory,
       systemInstruction: {
-        parts: [{text: "You are Rudranil's workout AI assistant. You help plan his workouts. To add an exercise to his list, output a JSON array of actions wrapped in ```json block like this: ```json [{\"action\":\"add\", \"name\":\"Squats\", \"sets\":\"3x10\"}, {\"action\":\"delete\", \"name\":\"Push-ups\"}] ```. Only use this JSON if you are modifying his workout. Keep your regular text replies very short and concise (under 2 sentences)."}]
+        parts: [{text: "You are Rudranil's workout AI assistant. You help plan his workouts. His current workout list contains: " + currentList + ". To modify his list, output a JSON array of actions wrapped in ```json block like this: ```json [{\"action\":\"add\", \"name\":\"Squats\", \"sets\":\"3x10\"}, {\"action\":\"delete\", \"name\":\"Push-ups\"}] ```. Only use this JSON if you are modifying his workout. Keep your regular text replies very short and concise (under 2 sentences)."}]
       }
     };
     

@@ -22,22 +22,35 @@ function getTodayPPL() {
 // === SEMESTER BACKLOGS (Real CU CCF Syllabus) ===
 // Sem 3 backlogs
 const MATH_SEM3 = {
-  dscc3: ["Real Number System & LUB", "Archimedean Property", "Open/Closed Sets & Bolzano-Weierstrass",
-          "Sequences & Cauchy Criterion", "Comparison & Ratio Test", "Root/Raabe's/Gauss Test",
-          "Alternating Series & Leibniz Test"],
-  dscc4: ["Exact ODEs & Integrating Factors", "Linear & Bernoulli Eqns", "Clairaut's Form & Singular Soln",
-          "Const Coeff Homogeneous/Non-homo", "Groups & Abelian Groups", "Permutation & Cyclic Groups",
-          "Subgroups & Lagrange's Theorem"],
-  sec3:  ["LPP Formulation & Graphical", "Simplex Method & Big-M", "Two-person Zero-sum Games",
-          "Saddle Points & Dominance"]
+  dscc3: [
+    "Real Number System", "L.U.B & G.L.B", "Archimedean Property", "Density of Rationals", 
+    "Neighbourhoods & Limit Points", "Open/Closed Sets", "Bolzano-Weierstrass Theorem",
+    "Sequence Bounds", "Monotone Sequences", "Sequence Limits", "Cauchy's Principle",
+    "Convergence/Divergence", "Absolute/Conditional Convergence", "Comparison Tests",
+    "D'Alembert's Ratio Test", "Cauchy's Root Test", "Kummer/Raabe/Gauss Tests", "Alternating Series & Leibniz Test"
+  ],
+  dscc4: [
+    "Order & Degree of ODE", "Exact ODEs", "Integrating Factors", "Linear & Bernoulli Equations", 
+    "Solvable for x, y, p", "Clairaut's Form & Singular Solutions", "Constant Coefficients Equations",
+    "Binary Operations", "Properties of Groups", "Abelian Groups", "Permutation & Alternating Groups", 
+    "Subgroups & Cyclic Groups", "Cosets & Lagrange's Theorem"
+  ],
+  sec3:  [
+    "LPP Formulation", "Graphical Method", "Convex Sets & Hyperplanes", "Extreme Points", 
+    "Standard Form of LPP", "Simplex Method", "Big-M Method",
+    "Zero-sum Rectangular Games", "Saddle Points", "Mixed Strategies", "Dominance Principle"
+  ]
 };
 const MATH_SEM3_ALL = [...MATH_SEM3.dscc3, ...MATH_SEM3.dscc4, ...MATH_SEM3.sec3];
 
 // Sem 1 backlogs
 const MATH_SEM1 = {
-  dscc1: ["Higher-order Derivatives & Leibniz", "L'Hospital & Curve Tracing",
-          "Reduction Formulae & Arc Length", "Rotation of Axes & Conics",
-          "3D Lines & Planes", "Vector Products & Applications"]
+  dscc1: [
+    "Higher-order Derivatives", "Leibniz Rule", "L'Hospital's Rule", "Concavity & Inflection", 
+    "Asymptotes & Envelopes", "Curve Tracing", "Reduction Formulae", "Arc Length", "Area/Volume of Revolution",
+    "2D Rotation of Axes", "Classification of Conics", "Polar Equations of Conics", "3D Lines & Planes", 
+    "Angle Between Planes", "Signed Distance", "Vector Analysis Basics"
+  ]
 };
 const MATH_SEM1_ALL = [...MATH_SEM1.dscc1];
 
@@ -46,8 +59,6 @@ let S = {
   mathSem3: Array(MATH_SEM3_ALL.length).fill(false),
   mathSem1: Array(MATH_SEM1_ALL.length).fill(false),
   sem4: { dscc5: [], dscc6: [], dscc7: [], dscc8: [] },
-  aff: ["Post deals", "Bot check", "EarnKaro links"],
-  affD: Array(3).fill(false),
   exercises: [{n:"Push-ups",s:"3x15",done:false},{n:"Pull-ups",s:"3x8",done:false},{n:"Plank",s:"3x60s",done:false}],
   fsVid: 35, pyVid: 23,
   month: Array(MONTH_DAYS).fill(false),
@@ -432,62 +443,6 @@ function renderPPLIndicator() {
   if (el) el.textContent = "Today: " + getTodayPPL() + " Day + Abs";
 }
 
-// === POMODORO TIMER ===
-let pomoInterval = null;
-let pomoTimeLeft = 25 * 60;
-let pomoMode = "focus";
-
-function formatPomoTime(secs) {
-  var m = Math.floor(secs / 60);
-  var s = secs % 60;
-  return m.toString().padStart(2, '0') + ":" + s.toString().padStart(2, '0');
-}
-
-function updatePomoDisplay() {
-  var el = document.getElementById("pomodoro-time");
-  if (el) el.textContent = formatPomoTime(pomoTimeLeft);
-}
-
-function startPomodoro() {
-  clearInterval(pomoInterval);
-  pomoMode = "focus";
-  pomoTimeLeft = 25 * 60;
-  document.getElementById("pomo-status").textContent = "Focusing...";
-  document.getElementById("pomo-start").textContent = "Restart Focus";
-  updatePomoDisplay();
-  pomoInterval = setInterval(pomoTick, 1000);
-}
-
-function startPomoBreak() {
-  clearInterval(pomoInterval);
-  pomoMode = "break";
-  pomoTimeLeft = 5 * 60;
-  document.getElementById("pomo-status").textContent = "Taking a break...";
-  updatePomoDisplay();
-  pomoInterval = setInterval(pomoTick, 1000);
-}
-
-function resetPomodoro() {
-  clearInterval(pomoInterval);
-  pomoMode = "focus";
-  pomoTimeLeft = 25 * 60;
-  document.getElementById("pomo-status").textContent = "Ready to focus.";
-  document.getElementById("pomo-start").textContent = "Start Focus";
-  updatePomoDisplay();
-}
-
-function pomoTick() {
-  if (pomoTimeLeft > 0) {
-    pomoTimeLeft--;
-    updatePomoDisplay();
-  } else {
-    clearInterval(pomoInterval);
-    document.getElementById("pomo-status").textContent = pomoMode === "focus" ? "Focus session complete! Take a break." : "Break complete! Time to focus.";
-    var audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    audio.play().catch(function(){});
-  }
-}
-
 // === MINI GEMINI AI ===
 const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
 let aiHistory = [];
@@ -552,7 +507,11 @@ async function sendAI() {
       body: JSON.stringify(reqBody)
     });
     
-    if (!res.ok) throw new Error("API Error");
+    if (!res.ok) {
+      var errData = await res.json();
+      console.error("Gemini API Error Data:", errData);
+      throw new Error(errData.error ? errData.error.message : "API Error");
+    }
     var data = await res.json();
     var replyText = data.candidates[0].content.parts[0].text;
     
@@ -586,7 +545,8 @@ async function sendAI() {
       aiHistory.push({role: "model", parts: [{text: replyText}]});
     }
   } catch(err) {
-    renderAIMessage("model", "Error connecting to AI. Check API key or network.");
+    console.error("AI Request Failed:", err);
+    renderAIMessage("model", "API Error: " + err.message + ". Check console for details.");
     aiHistory.pop(); // Remove user message from history on error
   }
   

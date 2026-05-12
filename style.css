@@ -579,7 +579,7 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   display: none;
   justify-content: center;
   align-items: center;
-  padding: 16px 0 8px;
+  padding: 12px 0 6px;
   transition: opacity 0.5s ease;
   opacity: 0;
 }
@@ -588,50 +588,78 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   opacity: 1;
 }
 
-/* The main bubble */
+/* The main capsule bar — tall vertical rounded rectangle */
 .fluid-bubble {
   position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: rgba(10, 10, 14, 0.9);
-  border: 2px solid rgba(168, 85, 247, 0.3);
+  width: 100%;
+  max-width: 280px;
+  height: 56px;
+  border-radius: 28px;
+  background: rgba(6, 6, 12, 0.95);
+  border: 1.5px solid rgba(56, 139, 255, 0.25);
   overflow: hidden;
-  animation: glowPulse 3s ease-in-out infinite, bubbleFloat 4s ease-in-out infinite;
+  box-shadow: 
+    0 0 25px rgba(56, 139, 255, 0.15),
+    inset 0 0 15px rgba(56, 139, 255, 0.05),
+    0 4px 20px rgba(0,0,0,0.4);
+  animation: capsuleGlow 3s ease-in-out infinite;
 }
 
-/* Liquid fill — the actual "water" */
+@keyframes capsuleGlow {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(56, 139, 255, 0.15), inset 0 0 15px rgba(56, 139, 255, 0.05), 0 4px 20px rgba(0,0,0,0.4);
+    border-color: rgba(56, 139, 255, 0.25);
+  }
+  50% { 
+    box-shadow: 0 0 35px rgba(56, 139, 255, 0.3), inset 0 0 25px rgba(56, 139, 255, 0.08), 0 4px 20px rgba(0,0,0,0.4);
+    border-color: rgba(56, 139, 255, 0.4);
+  }
+}
+
+/* Liquid fill — fills from LEFT to RIGHT in the capsule */
 .fluid-liquid {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
-  width: 100%;
-  height: 0%;
-  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(180deg, 
-    rgba(168, 85, 247, 0.7) 0%, 
-    rgba(139, 92, 246, 0.85) 40%, 
-    rgba(109, 40, 217, 0.95) 100%
+  width: 0%;
+  height: 100%;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, 
+    rgba(30, 64, 175, 0.9) 0%, 
+    rgba(56, 139, 255, 0.85) 40%,
+    rgba(99, 179, 255, 0.8) 70%,
+    rgba(56, 139, 255, 0.9) 100%
   );
 }
 
-/* Wave layers on top of the liquid */
+/* Wave layers on the RIGHT edge of the liquid */
 .fluid-wave {
   position: absolute;
-  top: -20px;
-  left: 50%;
-  width: 200%;
-  height: 40px;
+  right: -20px;
+  top: 50%;
+  width: 40px;
+  height: 200%;
   border-radius: 43%;
 }
 .fluid-wave-1 {
-  background: rgba(168, 85, 247, 0.5);
-  animation: liquidWave1 4s linear infinite;
+  background: rgba(56, 139, 255, 0.5);
+  animation: liquidWaveCapsule1 3s linear infinite;
 }
 .fluid-wave-2 {
-  background: rgba(139, 92, 246, 0.3);
-  animation: liquidWave2 5s linear infinite;
-  top: -16px;
+  background: rgba(99, 179, 255, 0.3);
+  animation: liquidWaveCapsule2 4s linear infinite;
+  right: -16px;
+}
+
+@keyframes liquidWaveCapsule1 {
+  0%   { transform: translate(0, -50%) rotate(0deg); }
+  50%  { transform: translate(-3px, -50%) rotate(180deg); }
+  100% { transform: translate(0, -50%) rotate(360deg); }
+}
+@keyframes liquidWaveCapsule2 {
+  0%   { transform: translate(0, -50%) rotate(0deg); }
+  50%  { transform: translate(2px, -50%) rotate(-180deg); }
+  100% { transform: translate(0, -50%) rotate(-360deg); }
 }
 
 /* Percentage text overlay */
@@ -642,36 +670,50 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   align-items: center;
   justify-content: center;
   font-family: 'Outfit', 'Inter', sans-serif;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   color: #fff;
   z-index: 2;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-  letter-spacing: -0.5px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+  letter-spacing: 1px;
 }
 
-/* Small label under the bubble */
+/* Small label under the capsule */
 .fluid-label {
   font-family: 'Outfit', 'Inter', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.35);
   text-align: center;
-  margin-top: 10px;
-  letter-spacing: 0.05em;
+  margin-top: 8px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-/* Responsive fluid bubble */
+/* Month grid clickable cells */
+.mday {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.mday:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
+}
+.mday:active {
+  transform: scale(0.95);
+}
+
+/* Responsive */
 @media (max-width:600px) {
   .fluid-bubble {
-    width: 80px;
-    height: 80px;
+    max-width: 220px;
+    height: 48px;
+    border-radius: 24px;
   }
   .fluid-pct {
-    font-size: 22px;
+    font-size: 18px;
   }
   .fluid-label {
-    font-size: 10px;
+    font-size: 9px;
   }
 }

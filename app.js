@@ -53,11 +53,11 @@ let S = {
   fsVid: 35, pyVid: 23,
   month: Array(MONTH_DAYS).fill(false),
   streak: 0,
+  streak: 0,
   scratchpad: "",
   review: "",
   savedKey: "",
-  savedMonth: CURRENT_MONTH,
-  geminiKey: ""
+  savedMonth: CURRENT_MONTH
 };
 
 // Debounced save
@@ -407,20 +407,11 @@ function renderPPLIndicator() {
 }
 
 // === MINI GEMINI AI ===
+const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
 let aiHistory = [];
 
 function initAI() {
-  var keySetup = document.getElementById("ai-key-setup");
-  var chatArea = document.getElementById("ai-chat-area");
-  if (!keySetup || !chatArea) return;
-  if (S.geminiKey) {
-    keySetup.style.display = "none";
-    chatArea.style.display = "flex";
-    updateAIStatus();
-  } else {
-    keySetup.style.display = "flex";
-    chatArea.style.display = "none";
-  }
+  updateAIStatus();
 }
 
 function updateAIStatus() {
@@ -438,18 +429,6 @@ function updateAIStatus() {
 window.addEventListener('online', updateAIStatus);
 window.addEventListener('offline', updateAIStatus);
 
-function saveAIKey() {
-  var val = document.getElementById("ai-key-input").value.trim();
-  if (val) {
-    console.log("Connecting AI with key...");
-    S.geminiKey = val;
-    saveState();
-    initAI();
-  } else {
-    alert("Please paste your Gemini API key first!");
-  }
-}
-
 function renderAIMessage(role, text) {
   var msgs = document.getElementById("ai-messages");
   var div = document.createElement("div");
@@ -462,7 +441,7 @@ function renderAIMessage(role, text) {
 async function sendAI() {
   var inp = document.getElementById("ai-input");
   var msg = inp.value.trim();
-  if (!msg || !S.geminiKey) return;
+  if (!msg || !GEMINI_KEY) return;
   
   inp.value = "";
   renderAIMessage("user", msg);
@@ -482,7 +461,7 @@ async function sendAI() {
       }
     };
     
-    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + S.geminiKey, {
+    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + GEMINI_KEY, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(reqBody)

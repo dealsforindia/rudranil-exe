@@ -122,13 +122,8 @@
               <span id="ai-status-text">offline</span>
             </div>
           </div>
-          <!-- API Key Setup (shown if no key) -->
-          <div id="ai-key-setup" class="ai-key-setup">
-            <input type="password" id="ai-key-input" class="add-task-input" placeholder="Paste Gemini API key..." style="font-size:11px;">
-            <button class="ai-send-btn" onclick="saveAIKey()" style="margin-top:6px; width:100%;">Connect</button>
-          </div>
-          <!-- Chat Area (shown when key exists) -->
-          <div id="ai-chat-area" class="ai-chat-area" style="display:none;">
+          <!-- Chat Area -->
+          <div id="ai-chat-area" class="ai-chat-area">
             <div class="ai-messages" id="ai-messages"></div>
             <div class="ai-input-row">
               <input type="text" id="ai-input" class="add-task-input" placeholder="Plan my workout..." onkeypress="if(event.key==='Enter') sendAI()" style="margin-top:0; flex:1;">

@@ -516,3 +516,162 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   .donut-chart { width:100px; height:100px; }
   .progress-stats { flex-direction:row; gap:16px; flex-wrap:wrap; }
 }
+
+/* ══════════════════════════════════════════════ */
+/* ═══  LIQUID BUBBLE PROGRESS ANIMATION  ═══ */
+/* ══════════════════════════════════════════════ */
+
+@keyframes liquidWave1 {
+  0%   { transform: translate(-50%, 0) rotate(0deg); }
+  50%  { transform: translate(-50%, -2%) rotate(180deg); }
+  100% { transform: translate(-50%, 0) rotate(360deg); }
+}
+@keyframes liquidWave2 {
+  0%   { transform: translate(-50%, 0) rotate(0deg); }
+  50%  { transform: translate(-50%, 3%) rotate(-180deg); }
+  100% { transform: translate(-50%, 0) rotate(-360deg); }
+}
+@keyframes bubbleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.2), inset 0 0 20px rgba(168, 85, 247, 0.05); }
+  50% { box-shadow: 0 0 35px rgba(168, 85, 247, 0.4), inset 0 0 30px rgba(168, 85, 247, 0.1); }
+}
+
+/* Collapsible backlog container */
+.backlog-collapsible .progress-header {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all 0.3s ease;
+}
+.backlog-collapsible .progress-header:hover {
+  opacity: 0.8;
+}
+.backlog-collapsible .progress-header::after {
+  content: '▼';
+  font-size: 9px;
+  color: rgba(255,255,255,0.3);
+  margin-left: 8px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+}
+.backlog-collapsible.collapsed .progress-header::after {
+  transform: rotate(-90deg);
+}
+
+/* Pill content smooth collapse */
+.backlog-pills-wrap {
+  max-height: 800px;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  opacity: 1;
+}
+.backlog-collapsible.collapsed .backlog-pills-wrap {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* Fluid bubble container */
+.fluid-bubble-wrap {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 16px 0 8px;
+  transition: opacity 0.5s ease;
+  opacity: 0;
+}
+.backlog-collapsible.collapsed .fluid-bubble-wrap {
+  display: flex;
+  opacity: 1;
+}
+
+/* The main bubble */
+.fluid-bubble {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(10, 10, 14, 0.9);
+  border: 2px solid rgba(168, 85, 247, 0.3);
+  overflow: hidden;
+  animation: glowPulse 3s ease-in-out infinite, bubbleFloat 4s ease-in-out infinite;
+}
+
+/* Liquid fill — the actual "water" */
+.fluid-liquid {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(180deg, 
+    rgba(168, 85, 247, 0.7) 0%, 
+    rgba(139, 92, 246, 0.85) 40%, 
+    rgba(109, 40, 217, 0.95) 100%
+  );
+}
+
+/* Wave layers on top of the liquid */
+.fluid-wave {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  width: 200%;
+  height: 40px;
+  border-radius: 43%;
+}
+.fluid-wave-1 {
+  background: rgba(168, 85, 247, 0.5);
+  animation: liquidWave1 4s linear infinite;
+}
+.fluid-wave-2 {
+  background: rgba(139, 92, 246, 0.3);
+  animation: liquidWave2 5s linear infinite;
+  top: -16px;
+}
+
+/* Percentage text overlay */
+.fluid-pct {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  z-index: 2;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  letter-spacing: -0.5px;
+}
+
+/* Small label under the bubble */
+.fluid-label {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  margin-top: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Responsive fluid bubble */
+@media (max-width:600px) {
+  .fluid-bubble {
+    width: 80px;
+    height: 80px;
+  }
+  .fluid-pct {
+    font-size: 22px;
+  }
+  .fluid-label {
+    font-size: 10px;
+  }
+}

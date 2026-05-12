@@ -317,6 +317,12 @@ function renderSem3() {
   var done3 = S.mathSem3.filter(Boolean).length;
   var el = document.getElementById("sem3-progress");
   if (el) el.textContent = done3 + '/' + MATH_SEM3_ALL.length + ' topics';
+  // Update fluid bubble
+  var pct3 = Math.round(done3 / MATH_SEM3_ALL.length * 100);
+  var fluidEl = document.getElementById("fluid-sem3");
+  if (fluidEl) fluidEl.style.height = pct3 + '%';
+  var fluidPct = document.getElementById("fluid-sem3-pct");
+  if (fluidPct) fluidPct.textContent = pct3 + '%';
 }
 function togSem3(i) { S.mathSem3[i] = !S.mathSem3[i]; renderSem3(); updStats(); saveState(); }
 
@@ -337,8 +343,20 @@ function renderSem1() {
   var done1 = S.mathSem1.filter(Boolean).length;
   var el = document.getElementById("sem1-progress");
   if (el) el.textContent = done1 + '/' + MATH_SEM1_ALL.length + ' topics';
+  // Update fluid bubble
+  var pct1 = Math.round(done1 / MATH_SEM1_ALL.length * 100);
+  var fluidEl = document.getElementById("fluid-sem1");
+  if (fluidEl) fluidEl.style.height = pct1 + '%';
+  var fluidPct = document.getElementById("fluid-sem1-pct");
+  if (fluidPct) fluidPct.textContent = pct1 + '%';
 }
 function togSem1(i) { S.mathSem1[i] = !S.mathSem1[i]; renderSem1(); updStats(); saveState(); }
+
+// === COLLAPSIBLE BACKLOG TOGGLE ===
+function toggleBacklog(cardId) {
+  var card = document.getElementById(cardId);
+  if (card) card.classList.toggle('collapsed');
+}
 
 function renderEx() {
   var h = "";

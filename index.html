@@ -6,7 +6,7 @@
   <title>RUDRANIL.EXE – Premium Dashboard</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0d0d0d">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -116,7 +116,7 @@
             <div class="ai-logo">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
-            <span class="ai-title">Gemini Assistant</span>
+            <span class="ai-title">Workout Assistant</span>
             <div class="ai-status" id="ai-status">
               <span class="ai-status-dot" id="ai-dot"></span>
               <span id="ai-status-text">offline</span>
@@ -206,37 +206,65 @@
       </div>
 
       <!-- SEM 3 BACKLOGS -->
-      <div class="card tasks-card">
+      <div class="card tasks-card backlog-collapsible" id="sem3-card">
         <div class="tasks-inner">
-          <div class="progress-header" style="margin-bottom:4px;">
+          <div class="progress-header" style="margin-bottom:4px;" onclick="toggleBacklog('sem3-card')">
             <span class="progress-title">📚 Sem 3 Backlogs</span>
-            <span id="sem3-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/18 topics</span>
+            <span id="sem3-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/42 topics</span>
           </div>
-          <div class="pill-group">
-            <div class="pill-label">DSCC-3 · Real Analysis</div>
-            <div class="pill-container" id="pills-dscc3"></div>
+          <div class="fluid-bubble-wrap">
+            <div style="text-align:center;">
+              <div class="fluid-bubble">
+                <div class="fluid-liquid" id="fluid-sem3">
+                  <div class="fluid-wave fluid-wave-1"></div>
+                  <div class="fluid-wave fluid-wave-2"></div>
+                </div>
+                <div class="fluid-pct" id="fluid-sem3-pct">0%</div>
+              </div>
+              <div class="fluid-label">Sem 3 Progress</div>
+            </div>
           </div>
-          <div class="pill-group">
-            <div class="pill-label">DSCC-4 · ODE & Group Theory I</div>
-            <div class="pill-container" id="pills-dscc4"></div>
-          </div>
-          <div class="pill-group">
-            <div class="pill-label">SEC-3 · Linear Programming & Games</div>
-            <div class="pill-container" id="pills-sec3"></div>
+          <div class="backlog-pills-wrap">
+            <div class="pill-group">
+              <div class="pill-label">DSCC-3 · Real Analysis</div>
+              <div class="pill-container" id="pills-dscc3"></div>
+            </div>
+            <div class="pill-group">
+              <div class="pill-label">DSCC-4 · ODE & Group Theory I</div>
+              <div class="pill-container" id="pills-dscc4"></div>
+            </div>
+            <div class="pill-group">
+              <div class="pill-label">SEC-3 · Linear Programming & Games</div>
+              <div class="pill-container" id="pills-sec3"></div>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- SEM 1 BACKLOGS -->
-      <div class="card tasks-card">
+      <div class="card tasks-card backlog-collapsible" id="sem1-card">
         <div class="tasks-inner">
-          <div class="progress-header" style="margin-bottom:4px;">
+          <div class="progress-header" style="margin-bottom:4px;" onclick="toggleBacklog('sem1-card')">
             <span class="progress-title">📖 Sem 1 Backlogs</span>
-            <span id="sem1-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/6 topics</span>
+            <span id="sem1-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/16 topics</span>
           </div>
-          <div class="pill-group">
-            <div class="pill-label">DSCC-1 · Calculus, Geometry & Vectors</div>
-            <div class="pill-container" id="pills-dscc1"></div>
+          <div class="fluid-bubble-wrap">
+            <div style="text-align:center;">
+              <div class="fluid-bubble">
+                <div class="fluid-liquid" id="fluid-sem1">
+                  <div class="fluid-wave fluid-wave-1"></div>
+                  <div class="fluid-wave fluid-wave-2"></div>
+                </div>
+                <div class="fluid-pct" id="fluid-sem1-pct">0%</div>
+              </div>
+              <div class="fluid-label">Sem 1 Progress</div>
+            </div>
+          </div>
+          <div class="backlog-pills-wrap">
+            <div class="pill-group">
+              <div class="pill-label">DSCC-1 · Calculus, Geometry & Vectors</div>
+              <div class="pill-container" id="pills-dscc1"></div>
+            </div>
           </div>
         </div>
       </div>

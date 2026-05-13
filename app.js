@@ -188,6 +188,9 @@ function renderDailies() {
 
 function setDailyMode(mode) {
   S.dailyMode = mode;
+  if (mode === "custom" && (!S.customDailies || S.customDailies.length === 0)) {
+    S.customDailies = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_DAILIES));
+  }
   renderDailies();
   updStats();
   saveState();
@@ -515,34 +518,20 @@ function updV(id, v) {
   updStats(); saveState();
 }
 
-// ── STREAK ──
-function renderStreak() {
-  var badge = document.getElementById("streak-badge");
-  var countEl = document.getElementById("streak-count");
-  if (S.streak > 0) {
-    badge.style.display = "inline-block";
-    countEl.textContent = S.streak;
-  } else {
-    badge.style.display = "none";
-  }
-}
-function calcStreak() {
-  // Count consecutive productive days ending at today
-  var streak = 0;
-  var idx = Math.min(TODAY_DAY - 1, S.month.length - 1);
-  for (var i = idx; i >= 0; i--) {
-    if (S.month[i]) streak++;
-    else break;
-  }
-  S.streak = streak;
-}
+// ── STREAK (disabled) ──
+function renderStreak() {}
+function calcStreak() {}
 
 // ── PENDING BANNER ──
 function renderPending() {
   var items = [];
-  DAILIES.forEach(function(d, i) { if (!S.dailies[i]) items.push(d); });
-  S.sem.forEach(function(t, i) { if (!S.semD[i]) items.push(t); });
-  S.exercises.forEach(function(e) { if (!e.done) items.push(e.n); });
+  if (S.dailyMode === "custom") {
+    S.customDailies.forEach(function(d) { if (!d.d) items.push(d.n); });
+  } else {
+    DAILIES.forEach(function(d, i) { if (!S.dailies[i]) items.push(d); });
+  }
+  if (S.sem && S.semD) S.sem.forEach(function(t, i) { if (!S.semD[i]) items.push(t); });
+  if (S.exercises) S.exercises.forEach(function(e) { if (!e.done) items.push(e.n); });
   var banner = document.getElementById("pending-banner");
   var list = document.getElementById("pending-list");
   var count = document.getElementById("pending-count");

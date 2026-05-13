@@ -94,6 +94,32 @@
           </div>
         </div>
       </div>
+      <div class="card tasks-card">
+        <div class="tasks-inner row-layout">
+          <div class="tasks-left">
+            <svg class="tasks-list-icon" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="#a855f7"/>
+              <rect x="9" y="10" width="14" height="2" rx="1" fill="#1a1a1e"/>
+              <rect x="9" y="15" width="14" height="2" rx="1" fill="#1a1a1e"/>
+              <rect x="9" y="20" width="14" height="2" rx="1" fill="#1a1a1e"/>
+            </svg>
+            <div class="tasks-count" id="dailies-count">0/7</div>
+            <div class="tasks-subtitle">Today's Dailies</div>
+            <div style="display:flex; margin-top:12px; background:rgba(0,0,0,0.3); border-radius:6px; overflow:hidden;">
+              <button id="mode-default-btn" onclick="setDailyMode('default')" style="flex:1; border:none; background:#a855f7; color:#fff; font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Default</button>
+              <button id="mode-custom-btn" onclick="setDailyMode('custom')" style="flex:1; border:none; background:transparent; color:rgba(255,255,255,0.5); font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Custom</button>
+            </div>
+          </div>
+          <div class="tasks-right">
+            <div id="dailies-list"></div>
+            <div id="custom-dailies-input" style="display:none; gap:6px; margin-top:10px;">
+              <input type="time" id="cd-time" class="add-task-input" style="width:90px; padding:6px 4px; font-size:11px; margin:0; text-align:center; color-scheme: dark;">
+              <input type="text" id="cd-name" class="add-task-input" placeholder="Task name..." onkeypress="if(event.key==='Enter') addCustomDaily()" style="flex:1; padding:6px 10px; font-size:11px; margin:0;">
+              <button class="add-task-input" style="width:45px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; padding:6px; font-size:11px; margin:0;" onclick="addCustomDaily()">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <div class="card tasks-card">
         <div class="tasks-inner">
@@ -161,33 +187,6 @@
     </div>
 
     <div class="col col-right">
-      <div class="card tasks-card">
-        <div class="tasks-inner row-layout">
-          <div class="tasks-left">
-            <svg class="tasks-list-icon" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#a855f7"/>
-              <rect x="9" y="10" width="14" height="2" rx="1" fill="#1a1a1e"/>
-              <rect x="9" y="15" width="14" height="2" rx="1" fill="#1a1a1e"/>
-              <rect x="9" y="20" width="14" height="2" rx="1" fill="#1a1a1e"/>
-            </svg>
-            <div class="tasks-count" id="dailies-count">0/7</div>
-            <div class="tasks-subtitle">Today's Dailies</div>
-            <div style="display:flex; margin-top:12px; background:rgba(0,0,0,0.3); border-radius:6px; overflow:hidden;">
-              <button id="mode-default-btn" onclick="setDailyMode('default')" style="flex:1; border:none; background:#a855f7; color:#fff; font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Default</button>
-              <button id="mode-custom-btn" onclick="setDailyMode('custom')" style="flex:1; border:none; background:transparent; color:rgba(255,255,255,0.5); font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Custom</button>
-            </div>
-          </div>
-          <div class="tasks-right">
-            <div id="dailies-list"></div>
-            <div id="custom-dailies-input" style="display:none; gap:6px; margin-top:10px;">
-              <input type="time" id="cd-time" class="add-task-input" style="width:90px; padding:6px 4px; font-size:11px; margin:0; text-align:center; color-scheme: dark;">
-              <input type="text" id="cd-name" class="add-task-input" placeholder="Task name..." onkeypress="if(event.key==='Enter') addCustomDaily()" style="flex:1; padding:6px 10px; font-size:11px; margin:0;">
-              <button class="add-task-input" style="width:45px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; padding:6px; font-size:11px; margin:0;" onclick="addCustomDaily()">Add</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="card action-card">
         <div class="action-title" style="display:flex; justify-content:space-between; align-items:center;">
           Quick Control <span id="sync-st" style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace;"></span>

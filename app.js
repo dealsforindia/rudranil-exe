@@ -702,6 +702,11 @@ async function pushToCloud() {
   if (!S.gistToken || !S.gistId) return;
   updateCloudStatus("Syncing...");
   try {
+    var secureS = JSON.parse(JSON.stringify(S));
+    delete secureS.aiKey;
+    delete secureS.gistToken;
+    delete secureS.gistId;
+
     var res = await fetch("https://api.github.com/gists/" + S.gistId, {
       method: "PATCH",
       headers: {
@@ -710,7 +715,7 @@ async function pushToCloud() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        files: { "rudranil-v7.json": { content: JSON.stringify(S) } }
+        files: { "rudranil-v7.json": { content: JSON.stringify(secureS) } }
       })
     });
     if (!res.ok) throw new Error("Sync failed");
@@ -734,7 +739,17 @@ async function pullFromCloud() {
       var cloudS = JSON.parse(content);
       // Basic merge: just take cloud if it exists
       if (cloudS && cloudS.dailies) {
+        // Keep our local keys safe
+        var localAi = S.aiKey;
+        var localToken = S.gistToken;
+        var localId = S.gistId;
+        
         S = cloudS;
+        
+        S.aiKey = localAi;
+        S.gistToken = localToken;
+        S.gistId = localId;
+
         renderAll();
         saveState(true); // save locally without pushing back
         updateCloudStatus("Synced");

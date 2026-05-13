@@ -79,7 +79,9 @@ let S = {
   review: "",
   savedKey: "",
   savedMonth: CURRENT_MONTH,
-  aiKey: ""
+  aiKey: "",
+  gistToken: "",
+  gistId: ""
 };
 
 // Debounced save
@@ -639,7 +641,7 @@ function pushToAndroid() {
   } catch(e) {}
 }
 
-function saveState() {
+function saveState(skipCloud) {
   var st = document.getElementById("sync-st");
   S.savedKey = TODAY_KEY;
   S.savedMonth = CURRENT_MONTH;
@@ -648,6 +650,11 @@ function saveState() {
     st.textContent = "Synced";
     st.style.color = "#2ecc40";
     setTimeout(function() { st.textContent = ""; }, 2000);
+    
+    // Auto sync to cloud if not skipped
+    if (!skipCloud && S.gistToken && S.gistId) {
+      pushToCloud();
+    }
   } catch(e) {
     st.textContent = "Error";
     st.style.color = "#ff4757";
@@ -672,17 +679,81 @@ function renderPPLIndicator() {
 const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
 let aiHistory = [];
 
-function toggleAISetup() {
-  var area = document.getElementById("ai-setup-area");
+function toggleSettingsSetup() {
+  var area = document.getElementById("settings-setup-area");
   area.style.display = area.style.display === "none" ? "flex" : "none";
   if (S.aiKey) document.getElementById("ai-key-input").value = S.aiKey;
+  if (S.gistToken) document.getElementById("gist-token-input").value = S.gistToken;
+  if (S.gistId) document.getElementById("gist-id-input").value = S.gistId;
 }
 
-function saveAIKey() {
-  var val = document.getElementById("ai-key-input").value.trim();
-  S.aiKey = val;
-  debouncedSave();
-  toggleAISetup();
+function updateCloudStatus(msg, err) {
+  var st = document.getElementById("cloud-sync-status");
+  if (!st) return;
+  st.style.display = "inline";
+  st.textContent = msg;
+  st.style.color = err ? "#ff4757" : "#2ecc40";
+  if (!err && msg === "Synced") {
+    setTimeout(function() { st.style.display = "none"; }, 3000);
+  }
+}
+
+async function pushToCloud() {
+  if (!S.gistToken || !S.gistId) return;
+  updateCloudStatus("Syncing...");
+  try {
+    var res = await fetch("https://api.github.com/gists/" + S.gistId, {
+      method: "PATCH",
+      headers: {
+        "Authorization": "token " + S.gistToken,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        files: { "rudranil-v7.json": { content: JSON.stringify(S) } }
+      })
+    });
+    if (!res.ok) throw new Error("Sync failed");
+    updateCloudStatus("Synced");
+  } catch (e) {
+    updateCloudStatus("Sync Error", true);
+  }
+}
+
+async function pullFromCloud() {
+  if (!S.gistToken || !S.gistId) return;
+  updateCloudStatus("Pulling...");
+  try {
+    var res = await fetch("https://api.github.com/gists/" + S.gistId, {
+      headers: { "Authorization": "token " + S.gistToken }
+    });
+    if (!res.ok) throw new Error("Pull failed");
+    var data = await res.json();
+    var content = data.files["rudranil-v7.json"].content;
+    if (content) {
+      var cloudS = JSON.parse(content);
+      // Basic merge: just take cloud if it exists
+      if (cloudS && cloudS.dailies) {
+        S = cloudS;
+        renderAll();
+        saveState(true); // save locally without pushing back
+        updateCloudStatus("Synced");
+      }
+    }
+  } catch (e) {
+    updateCloudStatus("Pull Error", true);
+  }
+}
+
+function saveSettings() {
+  S.aiKey = document.getElementById("ai-key-input").value.trim();
+  S.gistToken = document.getElementById("gist-token-input").value.trim();
+  S.gistId = document.getElementById("gist-id-input").value.trim();
+  saveState();
+  toggleSettingsSetup();
+  if (S.gistToken && S.gistId) {
+    pushToCloud();
+  }
 }
 
 function initAI() {
@@ -819,6 +890,8 @@ function loadState() {
       if (typeof loaded.scratchpad === 'undefined') loaded.scratchpad = "";
       if (typeof loaded.review === 'undefined') loaded.review = "";
       if (typeof loaded.aiKey === 'undefined') loaded.aiKey = "";
+      if (typeof loaded.gistToken === 'undefined') loaded.gistToken = "";
+      if (typeof loaded.gistId === 'undefined') loaded.gistId = "";
       // Ensure month array matches current month length
       if (!loaded.month || loaded.month.length !== MONTH_DAYS) {
         loaded.month = Array(MONTH_DAYS).fill(0);
@@ -858,6 +931,10 @@ function loadState() {
   initScratchpad();
   initReview();
   initAI();
+  
+  if (S.gistToken && S.gistId) {
+    pullFromCloud();
+  }
 }
 
 loadState();

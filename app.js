@@ -485,7 +485,7 @@ function openDayDetail(idx) {
       });
     } else {
       DAILIES.forEach(function(d, idx) {
-        listHTML += '<li>' + (S.dailies[idx] ? '✅' : '❌') + ' ' + d.n + '</li>';
+        listHTML += '<li>' + (S.dailies[idx] ? '✅' : '❌') + ' ' + d + '</li>';
       });
     }
     listHTML += '</ul>';

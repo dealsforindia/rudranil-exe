@@ -316,6 +316,13 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
 }
 .btn-sync:hover { box-shadow: 0 6px 28px rgba(39,201,99,0.4), inset 0 1px 0 rgba(255,255,255,0.15); }
 
+.btn-pull {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color:#0a1e2e;
+  box-shadow: 0 4px 20px rgba(52,152,219,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-pull:hover { box-shadow: 0 6px 28px rgba(52,152,219,0.4), inset 0 1px 0 rgba(255,255,255,0.15); }
+
 .btn-clear {
   background: linear-gradient(135deg, #d4a843, #a88425);
   color:#1a1400;

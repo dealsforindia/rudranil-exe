@@ -65,6 +65,7 @@ const MATH_SEM1 = {
 const MATH_SEM1_ALL = [...MATH_SEM1.dscc1];
 
 let S = {
+  lastModified: 0,
   dailyMode: "default",
   customDailies: [],
   dailies: Array(DAILIES.length).fill(false),
@@ -645,15 +646,21 @@ function saveState(skipCloud) {
   var st = document.getElementById("sync-st");
   S.savedKey = TODAY_KEY;
   S.savedMonth = CURRENT_MONTH;
+  S.lastModified = Date.now();
   try {
     localStorage.setItem("rudranil-v7", JSON.stringify(S));
-    st.textContent = "Synced";
-    st.style.color = "#2ecc40";
-    setTimeout(function() { st.textContent = ""; }, 2000);
     
-    // Auto sync to cloud if not skipped
+    // Show appropriate status based on cloud config
     if (!skipCloud && S.gistToken && S.gistId) {
+      updateSyncIndicator("pushing");
       pushToCloud();
+    } else if (S.gistToken && S.gistId) {
+      updateSyncIndicator("saved");
+    } else {
+      // No cloud configured — just show local save
+      st.textContent = "Saved";
+      st.style.color = "rgba(255,255,255,0.5)";
+      setTimeout(function() { st.textContent = ""; }, 2000);
     }
   } catch(e) {
     st.textContent = "Error";
@@ -698,67 +705,233 @@ function updateCloudStatus(msg, err) {
   }
 }
 
-async function pushToCloud() {
-  if (!S.gistToken || !S.gistId) return;
-  updateCloudStatus("Syncing...");
-  try {
-    var secureS = JSON.parse(JSON.stringify(S));
-    delete secureS.aiKey;
-    delete secureS.gistToken;
-    delete secureS.gistId;
-
-    var res = await fetch("https://api.github.com/gists/" + S.gistId, {
-      method: "PATCH",
-      headers: {
-        "Authorization": "token " + S.gistToken,
-        "Accept": "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        files: { "rudranil-v7.json": { content: JSON.stringify(secureS) } }
-      })
-    });
-    if (!res.ok) throw new Error("Sync failed");
-    updateCloudStatus("Synced");
-  } catch (e) {
-    updateCloudStatus("Sync Error", true);
+// === PERSISTENT SYNC STATUS INDICATOR ===
+function updateSyncIndicator(status) {
+  var st = document.getElementById("sync-st");
+  if (!st) return;
+  switch (status) {
+    case "pushing":
+      st.textContent = "↑ Pushing...";
+      st.style.color = "#f1c40f";
+      break;
+    case "pulling":
+      st.textContent = "↓ Pulling...";
+      st.style.color = "#3498db";
+      break;
+    case "synced":
+      st.textContent = "☁ Synced";
+      st.style.color = "#2ecc40";
+      setTimeout(function() {
+        st.textContent = "☁ Connected";
+        st.style.color = "rgba(255,255,255,0.3)";
+      }, 3000);
+      break;
+    case "pulled":
+      st.textContent = "↓ Updated!";
+      st.style.color = "#2ecc40";
+      setTimeout(function() {
+        st.textContent = "☁ Connected";
+        st.style.color = "rgba(255,255,255,0.3)";
+      }, 3000);
+      break;
+    case "in-sync":
+      st.textContent = "✓ In Sync";
+      st.style.color = "rgba(255,255,255,0.3)";
+      break;
+    case "saved":
+      st.textContent = "Saved";
+      st.style.color = "rgba(255,255,255,0.4)";
+      setTimeout(function() {
+        if (S.gistToken && S.gistId) {
+          st.textContent = "☁ Connected";
+          st.style.color = "rgba(255,255,255,0.3)";
+        } else {
+          st.textContent = "";
+        }
+      }, 2000);
+      break;
+    case "error":
+      st.textContent = "✗ Sync Error";
+      st.style.color = "#ff4757";
+      break;
+    case "offline":
+      st.textContent = "✗ Offline";
+      st.style.color = "#ff4757";
+      break;
+    case "connected":
+      st.textContent = "☁ Connected";
+      st.style.color = "rgba(255,255,255,0.3)";
+      break;
+    default:
+      st.textContent = "";
   }
 }
 
+// === CLOUD PUSH — Only shows "Synced" on actual success ===
+let _pushTimer = null;
+async function pushToCloud() {
+  if (!S.gistToken || !S.gistId) return;
+  
+  // Debounce cloud pushes to avoid API rate limits
+  if (_pushTimer) clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(async function() {
+    updateSyncIndicator("pushing");
+    updateCloudStatus("Pushing...");
+    try {
+      var secureS = JSON.parse(JSON.stringify(S));
+      delete secureS.aiKey;
+      delete secureS.gistToken;
+      delete secureS.gistId;
+
+      var res = await fetch("https://api.github.com/gists/" + S.gistId, {
+        method: "PATCH",
+        headers: {
+          "Authorization": "token " + S.gistToken,
+          "Accept": "application/vnd.github.v3+json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          files: { "rudranil-v7.json": { content: JSON.stringify(secureS) } }
+        })
+      });
+      if (!res.ok) throw new Error("Push failed: " + res.status);
+      updateSyncIndicator("synced");
+      updateCloudStatus("Synced");
+    } catch (e) {
+      console.error("Cloud push error:", e);
+      updateSyncIndicator("error");
+      updateCloudStatus("Push Error", true);
+    }
+  }, 1500); // 1.5s debounce for cloud pushes
+}
+
+// === CLOUD PULL — Timestamp-based smart merge ===
+let _isPulling = false;
 async function pullFromCloud() {
   if (!S.gistToken || !S.gistId) return;
+  if (_isPulling) return; // Prevent concurrent pulls
+  _isPulling = true;
+  
+  updateSyncIndicator("pulling");
   updateCloudStatus("Pulling...");
   try {
     var res = await fetch("https://api.github.com/gists/" + S.gistId, {
-      headers: { "Authorization": "token " + S.gistToken }
-    });
-    if (!res.ok) throw new Error("Pull failed");
-    var data = await res.json();
-    var content = data.files["rudranil-v7.json"].content;
-    if (content) {
-      var cloudS = JSON.parse(content);
-      // Basic merge: just take cloud if it exists
-      if (cloudS && cloudS.dailies) {
-        // Keep our local keys safe
-        var localAi = S.aiKey;
-        var localToken = S.gistToken;
-        var localId = S.gistId;
-        
-        S = cloudS;
-        
-        S.aiKey = localAi;
-        S.gistToken = localToken;
-        S.gistId = localId;
-
-        renderAll();
-        saveState(true); // save locally without pushing back
-        updateCloudStatus("Synced");
+      headers: {
+        "Authorization": "token " + S.gistToken,
+        "Cache-Control": "no-cache"
       }
+    });
+    if (!res.ok) throw new Error("Pull failed: " + res.status);
+    var data = await res.json();
+    var file = data.files["rudranil-v7.json"];
+    if (!file || !file.content) {
+      updateSyncIndicator("in-sync");
+      updateCloudStatus("Synced");
+      _isPulling = false;
+      return;
+    }
+    
+    var cloudS = JSON.parse(file.content);
+    if (!cloudS || !cloudS.dailies) {
+      updateSyncIndicator("in-sync");
+      _isPulling = false;
+      return;
+    }
+    
+    // === TIMESTAMP-BASED SMART MERGE ===
+    var cloudTime = cloudS.lastModified || 0;
+    var localTime = S.lastModified || 0;
+    
+    if (cloudTime > localTime) {
+      // Cloud is newer — apply cloud data
+      console.log("[Sync] Cloud is newer (cloud: " + new Date(cloudTime).toLocaleTimeString() + " vs local: " + new Date(localTime).toLocaleTimeString() + "). Pulling.");
+      
+      var localAi = S.aiKey;
+      var localToken = S.gistToken;
+      var localId = S.gistId;
+      
+      S = cloudS;
+      
+      // Restore local-only secrets
+      S.aiKey = localAi;
+      S.gistToken = localToken;
+      S.gistId = localId;
+      
+      renderAll();
+      // Save locally WITHOUT pushing back to avoid loop
+      S.savedKey = TODAY_KEY;
+      S.savedMonth = CURRENT_MONTH;
+      localStorage.setItem("rudranil-v7", JSON.stringify(S));
+      
+      updateSyncIndicator("pulled");
+      updateCloudStatus("Synced");
+    } else if (localTime > cloudTime) {
+      // Local is newer — push local to cloud
+      console.log("[Sync] Local is newer. Pushing to cloud.");
+      updateSyncIndicator("in-sync");
+      updateCloudStatus("Synced");
+      pushToCloud();
+    } else {
+      // Same timestamp — already in sync
+      console.log("[Sync] Already in sync.");
+      updateSyncIndicator("in-sync");
+      updateCloudStatus("Synced");
     }
   } catch (e) {
+    console.error("Cloud pull error:", e);
+    if (!navigator.onLine) {
+      updateSyncIndicator("offline");
+    } else {
+      updateSyncIndicator("error");
+    }
     updateCloudStatus("Pull Error", true);
   }
+  _isPulling = false;
 }
+
+// === AUTO-SYNC: Poll every 30 seconds ===
+let _pollTimer = null;
+function startAutoSync() {
+  if (_pollTimer) clearInterval(_pollTimer);
+  if (!S.gistToken || !S.gistId) return;
+  updateSyncIndicator("connected");
+  _pollTimer = setInterval(function() {
+    if (!document.hidden && navigator.onLine) {
+      pullFromCloud();
+    }
+  }, 30000); // Every 30 seconds
+}
+
+function stopAutoSync() {
+  if (_pollTimer) {
+    clearInterval(_pollTimer);
+    _pollTimer = null;
+  }
+}
+
+// === VISIBILITY CHANGE: Instant pull when user returns to tab ===
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden && S.gistToken && S.gistId && navigator.onLine) {
+    pullFromCloud();
+  }
+});
+
+// === ONLINE/OFFLINE: Resume/pause sync ===
+window.addEventListener('online', function() {
+  updateAIStatus();
+  if (S.gistToken && S.gistId) {
+    updateSyncIndicator("connected");
+    pullFromCloud();
+    startAutoSync();
+  }
+});
+window.addEventListener('offline', function() {
+  updateAIStatus();
+  if (S.gistToken && S.gistId) {
+    updateSyncIndicator("offline");
+    stopAutoSync();
+  }
+});
 
 function saveSettings() {
   S.aiKey = document.getElementById("ai-key-input").value.trim();
@@ -768,6 +941,7 @@ function saveSettings() {
   toggleSettingsSetup();
   if (S.gistToken && S.gistId) {
     pushToCloud();
+    startAutoSync();
   }
 }
 
@@ -787,8 +961,7 @@ function updateAIStatus() {
     text.textContent = "online";
   }
 }
-window.addEventListener('online', updateAIStatus);
-window.addEventListener('offline', updateAIStatus);
+// Online/offline listeners for AI status are now combined in the sync section above
 
 function renderAIMessage(role, text) {
   var msgs = document.getElementById("ai-messages");
@@ -907,6 +1080,7 @@ function loadState() {
       if (typeof loaded.aiKey === 'undefined') loaded.aiKey = "";
       if (typeof loaded.gistToken === 'undefined') loaded.gistToken = "";
       if (typeof loaded.gistId === 'undefined') loaded.gistId = "";
+      if (typeof loaded.lastModified === 'undefined') loaded.lastModified = 0;
       // Ensure month array matches current month length
       if (!loaded.month || loaded.month.length !== MONTH_DAYS) {
         loaded.month = Array(MONTH_DAYS).fill(0);
@@ -947,8 +1121,10 @@ function loadState() {
   initReview();
   initAI();
   
+  // Start cloud sync if configured
   if (S.gistToken && S.gistId) {
     pullFromCloud();
+    startAutoSync();
   }
 }
 

@@ -809,15 +809,15 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   .slider-label { font-size:10px; width:60px; }
 
   /* Action Card — hide on mobile, FAB takes over */
-  .action-card { display: none; }
+  .action-card { display: none !important; }
 
   /* Calendar nav arrows */
-  .cal-nav-btn { display: inline-flex; }
+  .cal-nav-btn { display: inline-flex !important; }
 
   /* FAB */
-  .fab-btn { display: flex; }
-  .fab-panel { display: block; }
-  .fab-panel.open { transform: translateY(0); }
+  .fab-btn { display: flex !important; }
+  .fab-panel { display: block !important; }
+  .fab-panel.open { transform: translateY(0) !important; }
   /* Month Grid */
   .month-label { margin-top:16px; font-size:11px; }
   .month-grid { gap:4px; margin-top:8px; }

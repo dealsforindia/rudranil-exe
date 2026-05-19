@@ -219,9 +219,7 @@
           </label>
         </div>
         <div class="cal-title">
-          <button class="cal-nav-btn" onclick="calNavMonth(-1)" title="Previous month">&#8249;</button>
           <span class="cal-title-text" id="cal-month-title">May 2026</span>
-          <button class="cal-nav-btn" onclick="calNavMonth(1)" title="Next month">&#8250;</button>
           <span class="cal-title-stats" id="cal-stats">0 productive days</span>
         </div>
         <div class="cal-header-row">
@@ -386,7 +384,8 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(function(){});
     }
-  </script>  <!-- FAB: Floating Quick Control (mobile only) -->
+  </script>
+  <!-- FAB: Floating Quick Control (mobile only) -->
   <div id="fab-overlay" onclick="closeFAB()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998;"></div>
   <div id="fab-panel" class="fab-panel">
     <div class="fab-panel-title">Quick Control <span id="sync-st" style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace; margin-left:8px;"></span></div>
@@ -402,6 +401,5 @@
   <button id="fab-btn" class="fab-btn" onclick="toggleFAB()">
     <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="4" r="2"/><circle cx="12" cy="20" r="2"/></svg>
   </button>
-
 </body>
 </html>

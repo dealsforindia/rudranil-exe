@@ -206,6 +206,10 @@
           </button>
         </div>
         <div class="action-buttons" style="margin-top:10px">
+          <button class="action-btn btn-analytics" onclick="openAnalytics()">
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>
+            Analytics & AI
+          </button>
           <button class="action-btn btn-backup" onclick="exportBackup()">
             <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
             Export Backup
@@ -329,6 +333,51 @@
       <div class="cal-modal-bar-wrap"><div class="cal-modal-bar" id="cal-modal-bar" style="width:0%"></div></div>
       <div class="cal-modal-summary" id="cal-modal-summary">No activity recorded for this day.</div>
       <button class="cal-modal-close" onclick="closeDayDetail()">Close</button>
+    </div>
+  </div>
+
+  <!-- Analytics Modal -->
+  <div class="cal-modal-overlay" id="analytics-modal-overlay" onclick="closeAnalytics(event)">
+    <div class="cal-modal" style="max-width:400px;">
+      <div class="cal-modal-date">Weekly Insights</div>
+      <div class="cal-modal-score tier-purple" id="analytics-score">7-Day Trend</div>
+      
+      <!-- Chart Area -->
+      <div class="analytics-chart">
+        <div class="chart-bars" id="analytics-bars">
+          <!-- Bars injected via JS -->
+        </div>
+        <div class="chart-labels" id="analytics-labels">
+          <!-- Labels injected via JS -->
+        </div>
+      </div>
+      
+      <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+        <div style="text-align:center; flex:1;">
+          <div style="font-size:24px; font-weight:800; color:#fff;" id="an-avg">0%</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.05em;">Avg Score</div>
+        </div>
+        <div style="text-align:center; flex:1; border-left:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:24px; font-weight:800; color:#a855f7;" id="an-streak">0</div>
+          <div style="font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.05em;">Days >70%</div>
+        </div>
+      </div>
+      
+      <!-- AI Weekly Report Card -->
+      <div class="ai-report-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <div style="font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#a855f7" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            AI Weekly Report Card
+          </div>
+          <button onclick="generateAIReport()" class="btn-generate-report" id="btn-gen-report">Analyze Week</button>
+        </div>
+        <div id="ai-report-content" style="font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; min-height:60px; background:rgba(0,0,0,0.2); padding:12px; border-radius:10px;">
+          Click "Analyze Week" to have Gemini read your last 7 days of reviews and stats to generate insights.
+        </div>
+      </div>
+      
+      <button class="cal-modal-close" style="margin-top:16px;" onclick="closeAnalytics()">Close Insights</button>
     </div>
   </div>
 

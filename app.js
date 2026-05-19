@@ -82,7 +82,8 @@ let S = {
   savedMonth: CURRENT_MONTH,
   aiKey: "",
   gistToken: "",
-  gistId: ""
+  gistId: "",
+  history: {}
 };
 
 // Debounced save
@@ -475,27 +476,53 @@ function openDayDetail(idx) {
   
   document.getElementById('cal-modal-bar').style.width = pct + '%';
   
+  var dayKey = "rd-v7-" + CURRENT_YEAR + "-" + (CURRENT_MONTH + 1) + "-" + dayNum;
+  var hist = S.history ? S.history[dayKey] : null;
+  
   // Summary text
   var summary = '';
   if (dayNum === TODAY_DAY) {
     var total = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
     var done = countDailies();
-    var listHTML = '<ul style="margin:8px 0; padding-left:20px; list-style:none;">';
+    var listHTML = '<ul style="margin:8px 0; padding-left:20px; list-style:none; font-size:13px; line-height:1.6;">';
     
     if (S.dailyMode === 'custom') {
       S.customDailies.forEach(function(d) {
-        listHTML += '<li>' + (d.d ? '✅' : '❌') + ' ' + d.n + '</li>';
+        listHTML += '<li><span style="display:inline-block; width:20px;">' + (d.d ? '✅' : '❌') + '</span> ' + d.n + '</li>';
       });
     } else {
       DAILIES.forEach(function(d, idx) {
-        listHTML += '<li>' + (S.dailies[idx] ? '✅' : '❌') + ' ' + d + '</li>';
+        listHTML += '<li><span style="display:inline-block; width:20px;">' + (S.dailies[idx] ? '✅' : '❌') + '</span> ' + d + '</li>';
       });
     }
     listHTML += '</ul>';
     
-    summary = 'Today: ' + done + '/' + total + ' dailies completed.<br>' + listHTML;
+    summary = '<div style="font-size:14px; color:#fff; font-weight:600;">Today: ' + done + '/' + total + ' dailies completed.</div>' + listHTML;
+  } else if (hist) {
+    var reviewText = hist.review ? hist.review : "No review written.";
+    var listHTML = '<div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1);">';
+    listHTML += '<div style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;">End of Day Review</div>';
+    listHTML += '<div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:8px; border-left:3px solid #a855f7; color:#e0c3fc; font-style:italic; font-size:13px;">"' + reviewText + '"</div></div>';
+    
+    if (hist.dailies && hist.dailies.length > 0) {
+      listHTML += '<div style="margin-top:14px;"><div style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;">Dailies</div>';
+      listHTML += '<ul style="margin:0; padding-left:0; list-style:none; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.7);">';
+      if (hist.dailyMode === "custom") {
+        hist.dailies.forEach(function(d) {
+          listHTML += '<li><span style="display:inline-block; width:18px;">' + (d.d ? '✅' : '❌') + '</span> ' + d.n + '</li>';
+        });
+      } else {
+        hist.dailies.forEach(function(done, idx) {
+          var dName = DAILIES[idx] || "Task";
+          listHTML += '<li><span style="display:inline-block; width:18px;">' + (done ? '✅' : '❌') + '</span> ' + dName + '</li>';
+        });
+      }
+      listHTML += '</ul></div>';
+    }
+    
+    summary = '<div style="font-size:14px; color:#fff; font-weight:600;">Achieved ' + pct + '% of goals</div>' + listHTML;
   } else if (pct > 0) {
-    summary = 'You achieved ' + pct + '% of your daily goals.';
+    summary = '<div style="font-size:14px; color:#fff; font-weight:600;">You achieved ' + pct + '% of your daily goals.</div><div style="font-size:12px; margin-top:8px; color:rgba(255,255,255,0.4);">(Legacy data — no detailed snapshot available)</div>';
   } else {
     summary = 'No activity was recorded for this day.';
   }
@@ -511,6 +538,146 @@ function closeDayDetail(e) {
   }
   if (!e) {
     document.getElementById('cal-modal-overlay').classList.remove('active');
+  }
+}
+
+// === ANALYTICS & AI ===
+function openAnalytics() {
+  document.getElementById('analytics-modal-overlay').classList.add('active');
+  renderAnalytics();
+}
+
+function closeAnalytics(e) {
+  if (e && e.target && e.target.id === 'analytics-modal-overlay') {
+    document.getElementById('analytics-modal-overlay').classList.remove('active');
+    return;
+  }
+  if (!e) {
+    document.getElementById('analytics-modal-overlay').classList.remove('active');
+  }
+}
+
+function renderAnalytics() {
+  // Get last 7 days keys
+  var keys = [];
+  var today = new Date(CURRENT_YEAR, CURRENT_MONTH, TODAY_DAY);
+  for (var i=6; i>=0; i--) {
+    var d = new Date(today);
+    d.setDate(d.getDate() - i);
+    var key = "rd-v7-" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    var label = d.toLocaleDateString('en-US', {weekday:'short'});
+    keys.push({key: key, label: label, dateObj: d});
+  }
+  
+  var barsH = "";
+  var labelsH = "";
+  var sumPct = 0;
+  var validDays = 0;
+  var streakCount = 0;
+  
+  keys.forEach(function(k) {
+    var pct = 0;
+    if (k.key === TODAY_KEY) {
+      // Use current live state for today
+      var cnt = countDailies();
+      var total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+      pct = Math.round((cnt / total) * 100);
+    } else {
+      var hist = S.history ? S.history[k.key] : null;
+      if (hist) {
+        pct = hist.pct || 0;
+      } else {
+        // Fallback to month array if in current month
+        if (k.dateObj.getMonth() === CURRENT_MONTH && k.dateObj.getFullYear() === CURRENT_YEAR) {
+          pct = S.month[k.dateObj.getDate() - 1] || 0;
+        }
+      }
+    }
+    
+    sumPct += pct;
+    validDays++;
+    if (pct >= 70) streakCount++;
+    
+    var h = Math.max(5, pct) + "%"; // min height 5% for visibility
+    barsH += '<div class="chart-bar-col"><div class="chart-bar-fill" style="height:' + h + '"></div></div>';
+    labelsH += '<div class="chart-label">' + k.label + '</div>';
+  });
+  
+  document.getElementById('analytics-bars').innerHTML = barsH;
+  document.getElementById('analytics-labels').innerHTML = labelsH;
+  document.getElementById('an-avg').textContent = Math.round(sumPct / validDays) + "%";
+  document.getElementById('an-streak').textContent = streakCount;
+  
+  document.getElementById('ai-report-content').innerHTML = 'Click "Analyze Week" to have Gemini read your last 7 days of reviews and stats to generate insights.';
+  document.getElementById('btn-gen-report').disabled = false;
+  document.getElementById('btn-gen-report').textContent = "Analyze Week";
+}
+
+async function generateAIReport() {
+  var keyToUse = S.aiKey || GEMINI_KEY;
+  if (!keyToUse) {
+    document.getElementById('ai-report-content').innerHTML = '<span style="color:#ff4757">API Key missing. Add it in Settings.</span>';
+    return;
+  }
+  
+  var btn = document.getElementById('btn-gen-report');
+  btn.disabled = true;
+  btn.textContent = "Analyzing...";
+  
+  var out = document.getElementById('ai-report-content');
+  out.innerHTML = '<div style="display:flex; justify-content:center; padding:20px;"><div class="ai-status-dot typing" style="width:8px;height:8px;"></div><span style="margin-left:8px; color:#a855f7; font-weight:600;">Gemini is reading your history...</span></div>';
+  
+  // Gather last 7 days data
+  var historyLog = "LAST 7 DAYS OF LOGS:\n\n";
+  var today = new Date(CURRENT_YEAR, CURRENT_MONTH, TODAY_DAY);
+  for (var i=6; i>=0; i--) {
+    var d = new Date(today);
+    d.setDate(d.getDate() - i);
+    var key = "rd-v7-" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    
+    var pct = 0;
+    var review = "None";
+    if (key === TODAY_KEY) {
+      var cnt = countDailies();
+      var total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+      pct = Math.round((cnt / total) * 100);
+      review = S.review || "None";
+    } else {
+      var hist = S.history ? S.history[key] : null;
+      if (hist) {
+        pct = hist.pct || 0;
+        review = hist.review || "None";
+      }
+    }
+    historyLog += "Date: " + d.toDateString() + "\nProductivity Score: " + pct + "%\nEnd of Day Review: " + review + "\n---\n";
+  }
+  
+  try {
+    var reqBody = {
+      contents: [{role: "user", parts: [{text: "Analyze this week's productivity data and end-of-day reviews. Write a short, motivating 'Weekly Report Card' (max 3 short paragraphs). Point out trends, what went well, what failed, and give a strategy for next week. Use markdown bolding for emphasis, but NO markdown headers (#).\n\n" + historyLog}]}],
+    };
+    
+    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + keyToUse, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(reqBody)
+    });
+    
+    if (!res.ok) throw new Error("API Error");
+    var data = await res.json();
+    var text = data.candidates[0].content.parts[0].text;
+    
+    // Format markdown bold to HTML
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong style="color:#fff">$1</strong>');
+    text = text.replace(/\n\n/g, '<br><br>');
+    text = text.replace(/\n/g, '<br>');
+    
+    out.innerHTML = text;
+    btn.textContent = "Analyzed";
+  } catch(e) {
+    out.innerHTML = '<span style="color:#ff4757">Failed to generate report. Check connection or API key.</span>';
+    btn.disabled = false;
+    btn.textContent = "Try Again";
   }
 }
 
@@ -647,6 +814,21 @@ function saveState(skipCloud) {
   S.savedKey = TODAY_KEY;
   S.savedMonth = CURRENT_MONTH;
   S.lastModified = Date.now();
+  
+  // Track history for today
+  if (!S.history) S.history = {};
+  var cnt = countDailies();
+  var total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+  S.history[TODAY_KEY] = {
+    pct: Math.round((cnt / total) * 100),
+    review: S.review || "",
+    fsVid: S.fsVid,
+    pyVid: S.pyVid,
+    exercises: JSON.parse(JSON.stringify(S.exercises || [])),
+    dailyMode: S.dailyMode,
+    dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || []))
+  };
+
   try {
     localStorage.setItem("rudranil-v7", JSON.stringify(S));
     
@@ -1081,6 +1263,7 @@ function loadState() {
       if (typeof loaded.gistToken === 'undefined') loaded.gistToken = "";
       if (typeof loaded.gistId === 'undefined') loaded.gistId = "";
       if (typeof loaded.lastModified === 'undefined') loaded.lastModified = 0;
+      if (typeof loaded.history === 'undefined') loaded.history = {};
       // Ensure month array matches current month length
       if (!loaded.month || loaded.month.length !== MONTH_DAYS) {
         loaded.month = Array(MONTH_DAYS).fill(0);

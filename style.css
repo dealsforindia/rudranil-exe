@@ -293,6 +293,12 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   padding:22px; display:flex; flex-direction:column;
   background: linear-gradient(160deg, #1e1e24, #1a1a1e);
 }
+
+/* ── CALENDAR CARD ── */
+.cal-card {
+  padding:22px; display:flex; flex-direction:column;
+  background: linear-gradient(160deg, #1e1e24, #1a1a1e);
+}
 .action-title { font-size:18px; font-weight:800; color:#fff; margin-bottom:14px; }
 .action-buttons { display:flex; flex-direction:column; gap:10px; }
 .action-btn {
@@ -810,6 +816,7 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
 
   /* Action Card — hide on mobile, FAB takes over */
   .action-card { display: none !important; }
+  .cal-card { padding: 16px !important; }
 
   /* Calendar nav arrows */
   .cal-nav-btn { display: inline-flex !important; }

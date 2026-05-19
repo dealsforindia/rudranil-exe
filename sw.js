@@ -1,4 +1,4 @@
-var CACHE = 'rudranil-v25';
+var CACHE = 'rudranil-v26';
 var FILES = ['./index.html', './style.css', './app.js'];
 
 self.addEventListener('install', function(e) {
@@ -13,6 +13,17 @@ self.addEventListener('activate', function(e) {
   self.clients.claim();
 });
 
+// Network-first: always try fresh code, fall back to cache when offline
 self.addEventListener('fetch', function(e) {
-  e.respondWith(caches.match(e.request).then(function(r) { return r || fetch(e.request); }));
+  e.respondWith(
+    fetch(e.request).then(function(res) {
+      if (res && res.status === 200) {
+        var clone = res.clone();
+        caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
+      }
+      return res;
+    }).catch(function() {
+      return caches.match(e.request);
+    })
+  );
 });

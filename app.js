@@ -1004,10 +1004,19 @@ async function pushToCloud() {
 
 // === CLOUD PULL — Timestamp-based smart merge ===
 let _isPulling = false;
+let _pullRetryTimer = null;
 async function pullFromCloud() {
   if (!S.gistToken || !S.gistId) return;
   if (_isPulling) return; // Prevent concurrent pulls
   _isPulling = true;
+  
+  // Don't even try if we know we're offline
+  if (!navigator.onLine) {
+    updateSyncIndicator("offline");
+    updateCloudStatus("Offline");
+    _isPulling = false;
+    return;
+  }
   
   updateSyncIndicator("pulling");
   updateCloudStatus("Pulling...");
@@ -1034,39 +1043,6 @@ async function pullFromCloud() {
       _isPulling = false;
       return;
     }
-
-    // === TIMESTAMP-BASED SMART MERGE ===
-    var cloudTime = cloudS.lastModified || 0;
-    var localTime = S.lastModified || 0;
-    if (cloudTime > localTime) {
-      // Cloud is newer — apply cloud data
-      console.log("[Sync] Cloud is newer (cloud: " + new Date(cloudTime).toLocaleTimeString() + " vs local: " + new Date(localTime).toLocaleTimeString() + "). Pulling.");
-      var localAi = S.aiKey;
-      var localToken = S.gistToken;
-      var localId = S.gistId;
-      S = cloudS;
-      // Restore local-only secrets
-      S.aiKey = localAi;
-      S.gistToken = localToken;
-      S.gistId = localId;
-      renderAll();
-      // Save locally WITHOUT pushing back to avoid loop
-      S.savedKey = TODAY_KEY;
-      S.savedMonth = CURRENT_MONTH;
-    }
-    // Ensure pull flag reset even on successful merge
-    _isPulling = false;
-    updateSyncIndicator("in-sync");
-    updateCloudStatus("Synced");
-  } catch (e) {
-    console.error("Pull error:", e);
-    updateSyncIndicator("error");
-    updateCloudStatus("Pull Error", true);
-    _isPulling = false;
-  } finally {
-    // Guarantee pull flag reset if not already
-    _isPulling = false;
-  }
     
     // === TIMESTAMP-BASED SMART MERGE ===
     var cloudTime = cloudS.lastModified || 0;
@@ -1092,8 +1068,7 @@ async function pullFromCloud() {
       S.savedKey = TODAY_KEY;
       S.savedMonth = CURRENT_MONTH;
       localStorage.setItem("rudranil-v7", JSON.stringify(S));
-      
-      updateSyncIndicator("pulled");
+      updateSyncIndicator("in-sync");
       updateCloudStatus("Synced");
     } else if (localTime > cloudTime) {
       // Local is newer — push local to cloud
@@ -1108,16 +1083,21 @@ async function pullFromCloud() {
       updateCloudStatus("Synced");
     }
   } catch (e) {
-    console.error("Cloud pull error:", e);
-    if (!navigator.onLine) {
-      updateSyncIndicator("offline");
-    } else {
-      updateSyncIndicator("error");
-    }
-    updateCloudStatus("Pull Error", true);
+    console.warn("Cloud pull error (will retry silently):", e);
+    _isPulling = false;
+    // Silent retry after 5s instead of showing error immediately
+    if (_pullRetryTimer) clearTimeout(_pullRetryTimer);
+    _pullRetryTimer = setTimeout(function() {
+      if (navigator.onLine && S.gistToken && S.gistId) {
+        pullFromCloud();
+      } else {
+        updateSyncIndicator("offline");
+        updateCloudStatus("Offline — will sync when connected");
+      }
+    }, 5000);
+    return;
   }
   _isPulling = false;
-}
 
 // === AUTO-SYNC: Poll every 30 seconds ===
 let _pollTimer = null;

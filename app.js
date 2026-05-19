@@ -81,8 +81,8 @@ let S = {
   savedKey: "",
   savedMonth: CURRENT_MONTH,
   aiKey: "",
-  gistToken: "",
-  gistId: "",
+  firebaseUrl: "",
+  firebaseKey: "",
   history: {},
   sem4ExamDate: "2026-06-15",
   sem3ExamDate: "2027-01-15",
@@ -715,7 +715,7 @@ function saveReviewOnly() {
   // Directly save to localStorage and trigger sync debounce
   try {
     localStorage.setItem("rudranil-v7", JSON.stringify(S));
-    if (S.gistToken && S.gistId) {
+    if (S.firebaseUrl) {
       debouncedSave();
     }
   } catch(e) {}
@@ -839,10 +839,10 @@ function saveState(skipCloud) {
     localStorage.setItem("rudranil-v7", JSON.stringify(S));
     
     // Show appropriate status based on cloud config
-    if (!skipCloud && S.gistToken && S.gistId) {
+    if (!skipCloud && S.firebaseUrl) {
       updateSyncIndicator("pushing");
       pushToCloud();
-    } else if (S.gistToken && S.gistId) {
+    } else if (S.firebaseUrl) {
       updateSyncIndicator("saved");
     } else {
       // No cloud configured — just show local save
@@ -881,8 +881,8 @@ function toggleSettingsSetup() {
   var area = document.getElementById("settings-setup-area");
   area.style.display = area.style.display === "none" ? "flex" : "none";
   if (S.aiKey) document.getElementById("ai-key-input").value = S.aiKey;
-  if (S.gistToken) document.getElementById("gist-token-input").value = S.gistToken;
-  if (S.gistId) document.getElementById("gist-id-input").value = S.gistId;
+  if (S.firebaseUrl) document.getElementById("firebase-url-input").value = S.firebaseUrl;
+  if (S.firebaseKey) document.getElementById("firebase-key-input").value = S.firebaseKey;
 }
 
 function updateCloudStatus(msg, err) {
@@ -964,190 +964,132 @@ function updateSyncIndicator(status) {
   });
 }
 
-// === CLOUD PUSH — Only shows "Synced" on actual success ===
-let _pushTimer = null;
-async function pushToCloud() {
-  if (!S.gistToken || !S.gistId) return;
-  
-  // Debounce cloud pushes to avoid API rate limits
-  if (_pushTimer) clearTimeout(_pushTimer);
-  _pushTimer = setTimeout(async function() {
-    updateSyncIndicator("pushing");
-    updateCloudStatus("Pushing...");
-    try {
-      var secureS = JSON.parse(JSON.stringify(S));
-      delete secureS.aiKey;
-      delete secureS.gistToken;
-      delete secureS.gistId;
+// === FIREBASE SYNC ===
+let firebaseDb = null;
+let _isPulling = false;
 
-      var res = await fetch("https://api.github.com/gists/" + S.gistId, {
-        method: "PATCH",
-        headers: {
-          "Authorization": "token " + S.gistToken,
-          "Accept": "application/vnd.github.v3+json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          files: { "rudranil-v7.json": { content: JSON.stringify(secureS) } }
-        })
+function initFirebase() {
+  if (!S.firebaseUrl) return;
+  if (!window.firebase) {
+    console.warn("Firebase SDK not loaded yet");
+    return;
+  }
+  
+  if (!firebase.apps.length) {
+    try {
+      firebase.initializeApp({
+        apiKey: S.firebaseKey || "AIzaSy_dummy",
+        databaseURL: S.firebaseUrl
       });
-      if (!res.ok) throw new Error("Push failed: " + res.status);
-      updateSyncIndicator("synced");
-      updateCloudStatus("Synced");
+      firebaseDb = firebase.database();
+      
+      updateSyncIndicator("connected");
+      
+      const stateRef = firebaseDb.ref('rudranil_state');
+      stateRef.on('value', function(snapshot) {
+        const data = snapshot.val();
+        if (data) {
+          handleCloudUpdate(data);
+        } else {
+          pushToCloud();
+        }
+      });
     } catch (e) {
-      console.error("Cloud push error:", e);
+      console.error("Firebase init error:", e);
       updateSyncIndicator("error");
-      updateCloudStatus("Push Error", true);
+      updateCloudStatus("Init Error", true);
     }
-  }, 1500); // 1.5s debounce for cloud pushes
+  }
 }
 
-// === CLOUD PULL — Timestamp-based smart merge ===
-let _isPulling = false;
-async function pullFromCloud() {
-  if (!S.gistToken || !S.gistId) return;
-  if (_isPulling) return; // Prevent concurrent pulls
+function handleCloudUpdate(cloudStateStr) {
   _isPulling = true;
-  
   updateSyncIndicator("pulling");
-  updateCloudStatus("Pulling...");
   try {
-    var res = await fetch("https://api.github.com/gists/" + S.gistId, {
-      headers: {
-        "Authorization": "token " + S.gistToken,
-        "Cache-Control": "no-cache"
-      }
-    });
-    if (!res.ok) throw new Error("Pull failed: " + res.status);
-    var data = await res.json();
-    var file = data.files["rudranil-v7.json"];
-    if (!file || !file.content) {
-      updateSyncIndicator("in-sync");
-      updateCloudStatus("Synced");
-      _isPulling = false;
-      return;
-    }
-    
-    var cloudS = JSON.parse(file.content);
-    if (!cloudS || !cloudS.dailies) {
-      updateSyncIndicator("in-sync");
-      _isPulling = false;
-      return;
-    }
-    
-    // === TIMESTAMP-BASED SMART MERGE ===
+    var cloudS = JSON.parse(cloudStateStr);
     var cloudTime = cloudS.lastModified || 0;
     var localTime = S.lastModified || 0;
     
     if (cloudTime > localTime) {
-      // Cloud is newer — apply cloud data
-      console.log("[Sync] Cloud is newer (cloud: " + new Date(cloudTime).toLocaleTimeString() + " vs local: " + new Date(localTime).toLocaleTimeString() + "). Pulling.");
-      
+      console.log("[Firebase] Cloud is newer. Pulling.");
       var localAi = S.aiKey;
-      var localToken = S.gistToken;
-      var localId = S.gistId;
+      var localUrl = S.firebaseUrl;
+      var localKey = S.firebaseKey;
       
       S = cloudS;
-      
-      // Restore local-only secrets
       S.aiKey = localAi;
-      S.gistToken = localToken;
-      S.gistId = localId;
+      S.firebaseUrl = localUrl;
+      S.firebaseKey = localKey;
       
       renderAll();
-      // Save locally WITHOUT pushing back to avoid loop
       S.savedKey = TODAY_KEY;
       S.savedMonth = CURRENT_MONTH;
       localStorage.setItem("rudranil-v7", JSON.stringify(S));
       
-      updateSyncIndicator("pulled");
+      updateSyncIndicator("synced");
       updateCloudStatus("Synced");
     } else if (localTime > cloudTime) {
-      // Local is newer — push local to cloud
-      console.log("[Sync] Local is newer. Pushing to cloud.");
-      updateSyncIndicator("in-sync");
-      updateCloudStatus("Synced");
       pushToCloud();
     } else {
-      // Same timestamp — already in sync
-      console.log("[Sync] Already in sync.");
-      updateSyncIndicator("in-sync");
+      updateSyncIndicator("synced");
       updateCloudStatus("Synced");
     }
   } catch (e) {
-    console.error("Cloud pull error:", e);
-    _isPulling = false; // reset immediately so retries are allowed
-    if (!navigator.onLine) {
-      updateSyncIndicator("offline");
-      updateCloudStatus("Offline", true);
-    } else {
-      // Transient error — silently retry once after 5 seconds
-      updateSyncIndicator("error");
-      updateCloudStatus("Pull Error", true);
-      setTimeout(function() {
-        if (S.gistToken && S.gistId && navigator.onLine) {
-          pullFromCloud();
-        }
-      }, 5000);
-    }
-    return;
+    console.error("Firebase parse error:", e);
   }
   _isPulling = false;
 }
 
-// === AUTO-SYNC: Poll every 30 seconds ===
-let _pollTimer = null;
-function startAutoSync() {
-  if (_pollTimer) clearInterval(_pollTimer);
-  if (!S.gistToken || !S.gistId) return;
-  updateSyncIndicator("connected");
-  _pollTimer = setInterval(function() {
-    if (!document.hidden && navigator.onLine) {
-      pullFromCloud();
-    }
-  }, 30000); // Every 30 seconds
+let _pushTimer = null;
+function pushToCloud() {
+  if (!firebaseDb || _isPulling) return;
+  
+  if (_pushTimer) clearTimeout(_pushTimer);
+  _pushTimer = setTimeout(function() {
+    updateSyncIndicator("pushing");
+    updateCloudStatus("Pushing...");
+    
+    var secureS = JSON.parse(JSON.stringify(S));
+    delete secureS.aiKey;
+    delete secureS.firebaseUrl;
+    delete secureS.firebaseKey;
+    
+    firebaseDb.ref('rudranil_state').set(JSON.stringify(secureS))
+      .then(function() {
+        updateSyncIndicator("synced");
+        updateCloudStatus("Synced");
+      })
+      .catch(function(e) {
+        console.error("Firebase push error:", e);
+        updateSyncIndicator("error");
+        updateCloudStatus("Push Error", true);
+      });
+  }, 1500);
 }
 
-function stopAutoSync() {
-  if (_pollTimer) {
-    clearInterval(_pollTimer);
-    _pollTimer = null;
-  }
-}
-
-// === VISIBILITY CHANGE: Instant pull when user returns to tab ===
+// === VISIBILITY & ONLINE EVENTS ===
 document.addEventListener('visibilitychange', function() {
-  if (!document.hidden && S.gistToken && S.gistId && navigator.onLine) {
-    pullFromCloud();
-  }
+  // Firebase handles reconnection automatically
 });
 
-// === ONLINE/OFFLINE: Resume/pause sync ===
 window.addEventListener('online', function() {
   updateAIStatus();
-  if (S.gistToken && S.gistId) {
-    updateSyncIndicator("connected");
-    pullFromCloud();
-    startAutoSync();
-  }
+  if (S.firebaseUrl) updateSyncIndicator("connected");
 });
 window.addEventListener('offline', function() {
   updateAIStatus();
-  if (S.gistToken && S.gistId) {
-    updateSyncIndicator("offline");
-    stopAutoSync();
-  }
+  if (S.firebaseUrl) updateSyncIndicator("offline");
 });
 
 function saveSettings() {
   S.aiKey = document.getElementById("ai-key-input").value.trim();
-  S.gistToken = document.getElementById("gist-token-input").value.trim();
-  S.gistId = document.getElementById("gist-id-input").value.trim();
+  S.firebaseUrl = document.getElementById("firebase-url-input").value.trim();
+  S.firebaseKey = document.getElementById("firebase-key-input").value.trim();
   saveState();
   toggleSettingsSetup();
-  if (S.gistToken && S.gistId) {
+  if (S.firebaseUrl) {
+    initFirebase();
     pushToCloud();
-    startAutoSync();
   }
 }
 
@@ -1321,8 +1263,8 @@ function loadState() {
       if (typeof loaded.scratchpad === 'undefined') loaded.scratchpad = "";
       if (typeof loaded.review === 'undefined') loaded.review = "";
       if (typeof loaded.aiKey === 'undefined') loaded.aiKey = "";
-      if (typeof loaded.gistToken === 'undefined') loaded.gistToken = "";
-      if (typeof loaded.gistId === 'undefined') loaded.gistId = "";
+      if (typeof loaded.firebaseUrl === 'undefined') loaded.firebaseUrl = "";
+      if (typeof loaded.firebaseKey === 'undefined') loaded.firebaseKey = "";
       if (typeof loaded.lastModified === 'undefined') loaded.lastModified = 0;
       if (typeof loaded.history === 'undefined') loaded.history = {};
       // Ensure month array matches current month length
@@ -1383,9 +1325,8 @@ function loadState() {
   initAI();
   
   // Start cloud sync if configured
-  if (S.gistToken && S.gistId) {
-    pullFromCloud();
-    startAutoSync();
+  if (S.firebaseUrl) {
+    initFirebase();
   }
 }
 

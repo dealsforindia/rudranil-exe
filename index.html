@@ -242,15 +242,15 @@
 
             <div
               style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px; font-weight:600; display:flex; justify-content:space-between;">
-              <span>☁️ Cloud Sync (GitHub Gist)</span>
+              <span>☁️ Cloud Sync (Firebase)</span>
               <span id="cloud-sync-status" style="color:#2ecc40; display:none;">Synced</span>
             </div>
             <div class="ai-input-row" style="margin-bottom:4px;">
-              <input type="password" id="gist-token-input" class="add-task-input" placeholder="GitHub Token (ghp_...)"
+              <input type="text" id="firebase-url-input" class="add-task-input" placeholder="Firebase Database URL"
                 style="margin-top:0; flex:1; font-family:monospace;">
             </div>
             <div class="ai-input-row">
-              <input type="text" id="gist-id-input" class="add-task-input" placeholder="Gist ID"
+              <input type="password" id="firebase-key-input" class="add-task-input" placeholder="Firebase API Key"
                 style="margin-top:0; flex:1; font-family:monospace;">
             </div>
             <div class="ai-input-row" style="margin-top:4px;">
@@ -489,6 +489,8 @@
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {

@@ -83,7 +83,18 @@ let S = {
   aiKey: "",
   gistToken: "",
   gistId: "",
-  history: {}
+  history: {},
+  sem4ExamDate: "2026-06-15",
+  sem3ExamDate: "2027-01-15",
+  topicOfDayIndex: 0,
+  lastTopicDate: "",
+  lastBriefDate: "",
+  lastReportDate: "",
+  insight: "",
+  weeklyReport: "",
+  dsccWatched: {dscc5:0, dscc6:2, dscc7:0, dscc8:0},
+  dsccTotal: {dscc5:8, dscc6:7, dscc7:12, dscc8:6},
+  aiHistory: []
 };
 
 // Debounced save
@@ -258,6 +269,30 @@ function resetDailies() {
   renderDailies(); autoMarkToday(); updStats(); saveState();
 }
 
+function getMostBehindPaper() {
+  var papers = ['dscc5', 'dscc6', 'dscc7', 'dscc8'];
+  var minPct = 100;
+  var behindId = null;
+  
+  papers.forEach(function(id) {
+    var watched = S.dsccWatched[id] || 0;
+    var total = S.dsccTotal[id] || 1;
+    var pct = (watched / total) * 100;
+    if (pct < 100 && pct < minPct) {
+      minPct = pct;
+      behindId = id;
+    } else if (pct < 100 && pct === minPct && behindId) {
+      var unwatchedCurr = total - watched;
+      var unwatchedMin = S.dsccTotal[behindId] - S.dsccWatched[behindId];
+      if (unwatchedCurr > unwatchedMin) {
+        behindId = id;
+      }
+    }
+  });
+  
+  return behindId;
+}
+
 function renderSem4() {
   var papers = [
     {id: 'dscc5', title: 'DSCC-5 · Theory of Real Functions'},
@@ -266,47 +301,57 @@ function renderSem4() {
     {id: 'dscc8', title: 'DSCC-8 · Group/Ring Theory'}
   ];
   
-  var totalTasks = 0;
-  var doneTasks = 0;
+  var behindId = getMostBehindPaper();
   var h = "";
   
+  var totalWatched = 0;
+  var totalClasses = 0;
+  
   papers.forEach(function(p) {
-    var tasks = S.sem4[p.id] || [];
-    totalTasks += tasks.length;
-    var paperDone = 0;
+    var watched = S.dsccWatched[p.id] || 0;
+    var total = S.dsccTotal[p.id] || 1;
+    totalWatched += watched;
+    totalClasses += total;
     
-    var listH = "";
-    tasks.forEach(function(t, i) {
-      if (t.d) { doneTasks++; paperDone++; }
-      listH += '<div class="task-item" onclick="togSem4(\'' + p.id + '\', ' + i + ')">' +
-        '<div class="task-check ' + (t.d ? 'completed' : '') + '">' + (t.d ? checkIcon : '') + '</div>' +
-        '<div class="task-info"><div class="task-name" style="' + (t.d ? 'opacity:0.4;text-decoration:line-through;' : '') + '">' + t.n + '</div></div>' +
-        '<div class="task-delete" onclick="event.stopPropagation();delSem4(\'' + p.id + '\', ' + i + ')">x</div></div>';
-    });
+    var pct = Math.round((watched / total) * 100);
+    var isBehind = (p.id === behindId);
     
-    h += '<div class="sem4-paper-group" style="margin-bottom:16px;">' +
-         '<div class="pill-label" style="display:flex; justify-content:space-between; margin-bottom:8px; color:rgba(255,255,255,0.7);">' + p.title + ' <span style="opacity:0.5">' + paperDone + '/' + tasks.length + '</span></div>' +
-         '<div class="sem4-tasks" style="margin-bottom:8px;">' + listH + '</div>' +
-         '<div style="display:flex; gap:8px;">' +
-           '<input type="text" id="sem-new-' + p.id + '" class="add-task-input" placeholder="Add task..." onkeypress="if(event.key===\'Enter\') addSem4(\'' + p.id + '\')" style="flex:1; margin-top:0; font-size:11px; padding:8px 12px;">' +
-           '<button class="add-task-input" style="width:50px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; margin-top:0; padding:8px;" onclick="addSem4(\'' + p.id + '\')">Add</button>' +
-         '</div></div>';
+    var cardStyle = isBehind ? 'border: 1px solid rgba(255, 71, 87, 0.4); background: rgba(255, 71, 87, 0.05);' : 'border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);';
+    var textStyle = isBehind ? 'color: #ff4757; font-weight: bold;' : 'color: rgba(255,255,255,0.85);';
+    var barColor = isBehind ? 'background: linear-gradient(90deg, #ff4757, #ff6b81);' : 'background: linear-gradient(90deg, #a855f7, #7c3aed);';
+    
+    h += '<div class="sem4-paper-item" style="padding:14px; border-radius:12px; margin-bottom:12px; transition: all 0.3s; ' + cardStyle + '">' +
+           '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
+             '<span style="font-size:12px; ' + textStyle + '">' + p.title + '</span>' +
+             '<span style="font-size:12px; font-weight:700; color:#fff;">' + watched + '/' + total + '</span>' +
+           '</div>' +
+           '<div style="display:flex; align-items:center; gap:12px;">' +
+             '<div style="flex:1; height:8px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;">' +
+               '<div style="height:100%; width:' + pct + '%; ' + barColor + ' transition: width 0.3s ease;"></div>' +
+             '</div>' +
+             '<div style="display:flex; gap:6px;">' +
+               '<button onclick="changeDscc(\'' + p.id + '\', -1)" style="width:28px; height:28px; border-radius:8px; border:none; background:rgba(255,255,255,0.08); color:#fff; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">−</button>' +
+               '<button onclick="changeDscc(\'' + p.id + '\', 1)" style="width:28px; height:28px; border-radius:8px; border:none; background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.3); color:#e0c3fc; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">+</button>' +
+             '</div>' +
+           '</div>' +
+         '</div>';
   });
   
-  document.getElementById("sem4-count").textContent = doneTasks + "/" + totalTasks;
+  var totalProgressPct = totalClasses > 0 ? Math.round((totalWatched / totalClasses) * 100) : 0;
+  document.getElementById("sem4-count").textContent = totalWatched + "/" + totalClasses + " (" + totalProgressPct + "%)";
   document.getElementById("sem4-list").innerHTML = h;
 }
 
-function togSem4(pId, i) { S.sem4[pId][i].d = !S.sem4[pId][i].d; renderSem4(); updStats(); saveState(); }
-function delSem4(pId, i) { if (!confirm('Delete "' + S.sem4[pId][i].n + '"?')) return; S.sem4[pId].splice(i, 1); renderSem4(); updStats(); saveState(); }
-function addSem4(pId) {
-  var inp = document.getElementById("sem-new-" + pId);
-  var v = inp.value.trim();
-  if (!v) return;
-  if (!S.sem4[pId]) S.sem4[pId] = [];
-  S.sem4[pId].push({n: v, d: false});
-  inp.value = "";
-  renderSem4(); updStats(); saveState();
+function changeDscc(id, diff) {
+  var curr = S.dsccWatched[id] || 0;
+  var total = S.dsccTotal[id] || 1;
+  var newVal = curr + diff;
+  if (newVal >= 0 && newVal <= total) {
+    S.dsccWatched[id] = newVal;
+    renderSem4();
+    updStats();
+    debouncedSave();
+  }
 }
 
 // === SEM 3 BACKLOG RENDERING ===
@@ -430,26 +475,31 @@ function openDayDetail(idx) {
 function closeDayDetail(e) {
   if (e && e.target && e.target.id === 'cal-modal-overlay') {
     document.getElementById('cal-modal-overlay').classList.remove('active');
+    document.body.style.overflow = '';
     return;
   }
   if (!e) {
     document.getElementById('cal-modal-overlay').classList.remove('active');
+    document.body.style.overflow = '';
   }
 }
 
 // === ANALYTICS & AI ===
 function openAnalytics() {
   document.getElementById('analytics-modal-overlay').classList.add('active');
-  renderAnalytics();
+  document.body.style.overflow = 'hidden';
+  generateWeeklyReport(false);
 }
 
 function closeAnalytics(e) {
   if (e && e.target && e.target.id === 'analytics-modal-overlay') {
     document.getElementById('analytics-modal-overlay').classList.remove('active');
+    document.body.style.overflow = '';
     return;
   }
   if (!e) {
     document.getElementById('analytics-modal-overlay').classList.remove('active');
+    document.body.style.overflow = '';
   }
 }
 
@@ -640,13 +690,28 @@ function renderPending() {
   list.innerHTML = h;
 }
 
+function saveReviewOnly() {
+  if (!S.history) S.history = {};
+  if (!S.history[TODAY_KEY]) S.history[TODAY_KEY] = {};
+  S.history[TODAY_KEY].review = S.review || "";
+  S.history[TODAY_KEY].scratchpad = S.scratchpad || "";
+  
+  // Directly save to localStorage and trigger sync debounce
+  try {
+    localStorage.setItem("rudranil-v7", JSON.stringify(S));
+    if (S.gistToken && S.gistId) {
+      debouncedSave();
+    }
+  } catch(e) {}
+}
+
 // ── SCRATCHPAD ──
 function initScratchpad() {
   var el = document.getElementById("scratchpad");
   el.value = S.scratchpad || "";
   el.addEventListener("input", function() {
     S.scratchpad = el.value;
-    debouncedSave();
+    saveReviewOnly();
   });
 }
 
@@ -671,7 +736,7 @@ function initReview() {
   var el = document.getElementById("review-text");
   el.addEventListener("input", function() {
     S.review = el.value;
-    debouncedSave();
+    saveReviewOnly();
   });
 }
 
@@ -779,6 +844,9 @@ function renderAll() {
   calcStreak(); updStats();
   document.getElementById("scratchpad").value = S.scratchpad || "";
   document.getElementById("review-text").value = S.review || "";
+  renderExamTimers();
+  checkTopicOfDay();
+  checkMorningBrief();
 }
 
 // === PPL Workout Day Indicator ===
@@ -812,64 +880,70 @@ function updateCloudStatus(msg, err) {
 
 // === PERSISTENT SYNC STATUS INDICATOR ===
 function updateSyncIndicator(status) {
-  var st = document.getElementById("sync-st");
-  if (!st) return;
-  switch (status) {
-    case "pushing":
-      st.textContent = "↑ Pushing...";
-      st.style.color = "#f1c40f";
-      break;
-    case "pulling":
-      st.textContent = "↓ Pulling...";
-      st.style.color = "#3498db";
-      break;
-    case "synced":
-      st.textContent = "☁ Synced";
-      st.style.color = "#2ecc40";
-      setTimeout(function() {
-        st.textContent = "☁ Connected";
-        st.style.color = "rgba(255,255,255,0.3)";
-      }, 3000);
-      break;
-    case "pulled":
-      st.textContent = "↓ Updated!";
-      st.style.color = "#2ecc40";
-      setTimeout(function() {
-        st.textContent = "☁ Connected";
-        st.style.color = "rgba(255,255,255,0.3)";
-      }, 3000);
-      break;
-    case "in-sync":
-      st.textContent = "✓ In Sync";
-      st.style.color = "rgba(255,255,255,0.3)";
-      break;
-    case "saved":
-      st.textContent = "Saved";
-      st.style.color = "rgba(255,255,255,0.4)";
-      setTimeout(function() {
-        if (S.gistToken && S.gistId) {
+  var elements = [
+    document.getElementById("sync-st"),
+    document.getElementById("sync-st-fab")
+  ];
+  
+  elements.forEach(function(st) {
+    if (!st) return;
+    switch (status) {
+      case "pushing":
+        st.textContent = "↑ Pushing...";
+        st.style.color = "#f1c40f";
+        break;
+      case "pulling":
+        st.textContent = "↓ Pulling...";
+        st.style.color = "#3498db";
+        break;
+      case "synced":
+        st.textContent = "☁ Synced";
+        st.style.color = "#2ecc40";
+        setTimeout(function() {
           st.textContent = "☁ Connected";
           st.style.color = "rgba(255,255,255,0.3)";
-        } else {
-          st.textContent = "";
-        }
-      }, 2000);
-      break;
-    case "error":
-      st.textContent = "✗ Sync Error";
-      st.style.color = "#ff4757";
-      break;
-    case "offline":
-      st.textContent = "✗ Offline";
-      st.style.color = "#ff4757";
-      break;
-    case "connected":
-      st.textContent = "☁ Connected";
-      st.style.color = "rgba(255,255,255,0.3)";
-      break;
-    default:
-      st.textContent = "";
-  }
+        }, 3000);
+        break;
+      case "pulled":
+        st.textContent = "↓ Updated!";
+        st.style.color = "#2ecc40";
+        setTimeout(function() {
+          st.textContent = "☁ Connected";
+          st.style.color = "rgba(255,255,255,0.3)";
+        }, 3000);
+        break;
+      case "in-sync":
+        st.textContent = "✓ In Sync";
+        st.style.color = "rgba(255,255,255,0.3)";
+        break;
+      case "saved":
+        st.textContent = "Saved";
+        st.style.color = "rgba(255,255,255,0.4)";
+        setTimeout(function() {
+          if (S.gistToken && S.gistId) {
+            st.textContent = "☁ Connected";
+            st.style.color = "rgba(255,255,255,0.3)";
+          } else {
+            st.textContent = "";
+          }
+        }, 2000);
+        break;
+      case "error":
+        st.textContent = "✗ Sync Error";
+        st.style.color = "#ff4757";
+        break;
+      case "offline":
+        st.textContent = "✗ Offline";
+        st.style.color = "#ff4757";
+        break;
+      case "connected":
+        st.textContent = "☁ Connected";
+        st.style.color = "rgba(255,255,255,0.3)";
+        break;
+      default:
+        st.textContent = "";
+    }
+  });
 }
 
 // === CLOUD PUSH — Only shows "Synced" on actual success ===
@@ -1052,6 +1126,16 @@ function saveSettings() {
 
 function initAI() {
   updateAIStatus();
+  // Render persistent chat history
+  var msgs = document.getElementById("ai-messages");
+  if (msgs) {
+    msgs.innerHTML = "";
+    (S.aiHistory || []).forEach(function(m) {
+      if (m.parts && m.parts[0] && m.parts[0].text) {
+        renderAIMessage(m.role === "user" ? "user" : "ai", m.parts[0].text);
+      }
+    });
+  }
 }
 
 function updateAIStatus() {
@@ -1097,6 +1181,9 @@ async function sendAI() {
   text.textContent = "thinking...";
   
   aiHistory.push({role: "user", parts: [{text: msg}]});
+  aiHistory = aiHistory.slice(-10);
+  S.aiHistory = aiHistory;
+  debouncedSave();
   
   try {
     var currentList = S.exercises.map(function(e) { return e.n + " (" + e.s + ")"; }).join(", ");
@@ -1166,6 +1253,9 @@ async function sendAI() {
     if (replyText) {
       renderAIMessage("model", replyText);
       aiHistory.push({role: "model", parts: [{text: replyText}]});
+      aiHistory = aiHistory.slice(-10);
+      S.aiHistory = aiHistory;
+      debouncedSave();
     }
   } catch(err) {
     console.error("AI Request Failed:", err);
@@ -1243,6 +1333,18 @@ function loadState() {
       }
       
       if (!loaded.dailyMode) loaded.dailyMode = "default";
+      if (typeof loaded.sem4ExamDate === 'undefined') loaded.sem4ExamDate = "2026-06-15";
+      if (typeof loaded.sem3ExamDate === 'undefined') loaded.sem3ExamDate = "2027-01-15";
+      if (typeof loaded.topicOfDayIndex === 'undefined') loaded.topicOfDayIndex = 0;
+      if (typeof loaded.lastTopicDate === 'undefined') loaded.lastTopicDate = "";
+      if (typeof loaded.lastBriefDate === 'undefined') loaded.lastBriefDate = "";
+      if (typeof loaded.lastReportDate === 'undefined') loaded.lastReportDate = "";
+      if (typeof loaded.insight === 'undefined') loaded.insight = "";
+      if (typeof loaded.weeklyReport === 'undefined') loaded.weeklyReport = "";
+      if (!loaded.dsccWatched) loaded.dsccWatched = {dscc5:0, dscc6:2, dscc7:0, dscc8:0};
+      if (!loaded.dsccTotal) loaded.dsccTotal = {dscc5:8, dscc6:7, dscc7:12, dscc8:6};
+      if (!loaded.aiHistory) loaded.aiHistory = [];
+      
       // Detect and migrate old default custom dailies (old list had 'Python' and 'Break 15 min')
       var hasOldDefaults = !loaded.customDailies || loaded.customDailies.length === 0 ||
         loaded.customDailies[0].n === "Wake up on time" ||
@@ -1252,6 +1354,7 @@ function loadState() {
       }
       
       for (var key in loaded) { S[key] = loaded[key]; }
+      aiHistory = S.aiHistory || [];
     }
   } catch(e) {}
   pruneHistory();
@@ -1412,6 +1515,320 @@ function toggleFAB() {
 function closeFAB() {
   document.getElementById('fab-panel').classList.remove('open');
   document.getElementById('fab-overlay').style.display = 'none';
+}
+
+// === NEW EXECUTIVE FEATURES: BRIEF, TIMERS, TOPIC OF DAY, WEEKLY REPORT ===
+
+function getDaysRemaining(dateStr) {
+  var target = new Date(dateStr + "T00:00:00");
+  var today = new Date();
+  target.setHours(0,0,0,0);
+  today.setHours(0,0,0,0);
+  var diffTime = target - today;
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function renderExamTimers() {
+  var sem4Days = getDaysRemaining(S.sem4ExamDate || "2026-06-15");
+  var sem3Days = getDaysRemaining(S.sem3ExamDate || "2027-01-15");
+  
+  updateTimerElement("sem4-days", sem4Days);
+  updateTimerElement("sem3-days", sem3Days);
+}
+
+function updateTimerElement(id, days) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  
+  if (days < 0) {
+    el.textContent = "Passed";
+    el.className = "timer-card-days timer-red";
+  } else {
+    el.textContent = days + " d";
+    if (days > 60) {
+      el.className = "timer-card-days timer-green";
+    } else if (days >= 30) {
+      el.className = "timer-card-days timer-yellow";
+    } else {
+      el.className = "timer-card-days timer-red";
+    }
+  }
+}
+
+async function checkMorningBrief() {
+  var todayStr = TODAY_KEY;
+  var dateEl = document.getElementById("brief-date-el");
+  var contentEl = document.getElementById("brief-content-el");
+  
+  if (dateEl) {
+    var dateObj = new Date();
+    dateEl.textContent = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  }
+  
+  if (S.lastBriefDate === todayStr && S.insight) {
+    if (contentEl) contentEl.innerHTML = S.insight;
+    return;
+  }
+  
+  if (contentEl) contentEl.innerHTML = '<span style="color:rgba(255,255,255,0.4); font-style:italic;">Synthesizing morning intelligence brief...</span>';
+  
+  var behindId = getMostBehindPaper();
+  var papersMap = {
+    dscc5: 'DSCC-5 (Theory of Real Functions)',
+    dscc6: 'DSCC-6 (Mechanics I)',
+    dscc7: 'DSCC-7 (Multivariate & PDE)',
+    dscc8: 'DSCC-8 (Group/Ring Theory)'
+  };
+  var behindPaperName = behindId ? papersMap[behindId] : "None";
+  
+  var sem4Days = getDaysRemaining(S.sem4ExamDate || "2026-06-15");
+  var sem3Days = getDaysRemaining(S.sem3ExamDate || "2027-01-15");
+  
+  var histSummary = "";
+  if (S.history) {
+    var keys = Object.keys(S.history).sort().slice(-7);
+    keys.forEach(function(k) {
+      var entry = S.history[k];
+      if (entry) {
+        histSummary += "\n- Date " + k.replace('rd-v7-', '') + ": " + (entry.pct || 0) + "% completed, Review: " + (entry.review || "None");
+      }
+    });
+  }
+  if (!histSummary) histSummary = "No historical snapshots in the last 7 days.";
+
+  var fallbackBrief = "• <strong>Study Priority:</strong> You are currently most behind in <strong>" + behindPaperName + "</strong> (" + (S.dsccWatched[behindId] || 0) + "/" + (S.dsccTotal[behindId] || 0) + " classes watched).<br/>" +
+    "• <strong>Exam countdown:</strong> Sem 4 exams in <strong>" + sem4Days + " days</strong> (" + (S.sem4ExamDate || "2026-06-15") + "); Sem 3 exams in <strong>" + sem3Days + " days</strong>.<br/>" +
+    "• <strong>Productivity Advice:</strong> Consistency is key. Complete your dailies to unlock your streak!";
+
+  var keyToUse = S.aiKey || GEMINI_KEY;
+  if (!navigator.onLine || !keyToUse) {
+    S.insight = fallbackBrief;
+    S.lastBriefDate = todayStr;
+    saveState(true);
+    if (contentEl) contentEl.innerHTML = S.insight;
+    return;
+  }
+  
+  try {
+    var prompt = "You are an executive productivity AI. Write a concise 3-sentence Morning Brief for Rudranil." +
+      "\nLive state data:" +
+      "\n- Sem 4 Exam countdown: " + sem4Days + " days left (Date: " + (S.sem4ExamDate || "2026-06-15") + ")" +
+      "\n- Sem 3 Exam countdown: " + sem3Days + " days left (Date: " + (S.sem3ExamDate || "2027-01-15") + ")" +
+      "\n- Sem 4 watched progress: DSCC-5 (" + S.dsccWatched.dscc5 + "/" + S.dsccTotal.dscc5 + "), DSCC-6 (" + S.dsccWatched.dscc6 + "/" + S.dsccTotal.dscc6 + "), DSCC-7 (" + S.dsccWatched.dscc7 + "/" + S.dsccTotal.dscc7 + "), DSCC-8 (" + S.dsccWatched.dscc8 + "/" + S.dsccTotal.dscc8 + ")" +
+      "\n- Last 7 days history snapshot: " + histSummary +
+      "\nBrief instructions: Identify which DSCC paper is most behind, highlight exam urgency, and point out one specific pattern/lesson from the last 7 days. Be sharp, direct, premium, and highly motivating. Wrap brief in HTML paragraphs or bullet points. No conversational filler.";
+      
+    var reqBody = {
+      contents: [{role: "user", parts: [{text: prompt}]}]
+    };
+    
+    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + keyToUse, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(reqBody)
+    });
+    
+    if (!res.ok) throw new Error("Gemini brief failed");
+    var data = await res.json();
+    var replyText = data.candidates[0].content.parts[0].text.trim();
+    
+    replyText = replyText.replace(/```html\s*([\s\S]*?)\s*```/g, "$1");
+    replyText = replyText.replace(/```\s*([\s\S]*?)\s*```/g, "$1");
+    
+    S.insight = replyText;
+    S.lastBriefDate = todayStr;
+    saveState(true);
+    if (contentEl) contentEl.innerHTML = S.insight;
+  } catch (err) {
+    console.error("Gemini brief error, using fallback:", err);
+    S.insight = fallbackBrief;
+    S.lastBriefDate = todayStr;
+    saveState(true);
+    if (contentEl) contentEl.innerHTML = S.insight;
+  }
+}
+
+function checkTopicOfDay(force) {
+  var todayStr = TODAY_KEY;
+  
+  if (S.lastTopicDate !== todayStr || force) {
+    var found = false;
+    for (var i = S.topicOfDayIndex; i < MATH_SEM3_ALL.length; i++) {
+      if (!S.mathSem3[i]) {
+        S.topicOfDayIndex = i;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      for (var i = 0; i < MATH_SEM3_ALL.length; i++) {
+        if (!S.mathSem3[i]) {
+          S.topicOfDayIndex = i;
+          found = true;
+          break;
+        }
+      }
+    }
+    if (found && !force) {
+      S.lastTopicDate = todayStr;
+      saveState(true);
+    }
+  }
+  
+  var btn = document.getElementById("topic-of-day-btn");
+  if (!btn) return;
+  
+  var currIdx = S.topicOfDayIndex;
+  if (currIdx >= 0 && currIdx < MATH_SEM3_ALL.length && !S.mathSem3[currIdx]) {
+    var topicName = MATH_SEM3_ALL[currIdx];
+    btn.textContent = "📖 Today: " + topicName;
+    btn.style.display = "inline-block";
+    btn.style.cursor = "pointer";
+    btn.style.background = "rgba(168,85,247,0.15)";
+    btn.style.borderColor = "rgba(168,85,247,0.3)";
+    btn.style.color = "#e0c3fc";
+    btn.onclick = function() {
+      if (confirm('Mark "' + topicName + '" as completed?')) {
+        S.mathSem3[currIdx] = true;
+        renderSem3();
+        updStats();
+        checkTopicOfDay(true);
+        saveState();
+      }
+    };
+  } else {
+    var allDone = S.mathSem3.filter(Boolean).length === MATH_SEM3_ALL.length;
+    if (allDone) {
+      btn.textContent = "✅ All Sem 3 topics complete!";
+      btn.onclick = null;
+      btn.style.cursor = "default";
+      btn.style.background = "rgba(46,204,64,0.15)";
+      btn.style.borderColor = "rgba(46,204,64,0.3)";
+      btn.style.color = "#86efac";
+    } else {
+      var foundNext = false;
+      for (var i = 0; i < MATH_SEM3_ALL.length; i++) {
+        if (!S.mathSem3[i]) {
+          S.topicOfDayIndex = i;
+          foundNext = true;
+          break;
+        }
+      }
+      if (foundNext) {
+        var nextTopic = MATH_SEM3_ALL[S.topicOfDayIndex];
+        btn.textContent = "📖 Today: " + nextTopic;
+        btn.style.display = "inline-block";
+        btn.style.cursor = "pointer";
+        btn.style.background = "rgba(168,85,247,0.15)";
+        btn.style.borderColor = "rgba(168,85,247,0.3)";
+        btn.style.color = "#e0c3fc";
+        btn.onclick = function() {
+          if (confirm('Mark "' + nextTopic + '" as completed?')) {
+            S.mathSem3[S.topicOfDayIndex] = true;
+            renderSem3();
+            updStats();
+            checkTopicOfDay(true);
+            saveState();
+          }
+        };
+      }
+    }
+  }
+}
+
+async function generateWeeklyReport(force) {
+  var todayStr = TODAY_KEY;
+  var container = document.getElementById("weekly-report-container");
+  var btn = document.getElementById("btn-trigger-report");
+  
+  if (!force && S.lastReportDate === todayStr && S.weeklyReport) {
+    if (container) container.innerHTML = S.weeklyReport;
+    return;
+  }
+  
+  if (container) {
+    container.innerHTML = '<span style="color:rgba(255,255,255,0.4); font-style:italic;">Synthesizing deep 30-day analytics history via Gemini AI... This will take a few seconds...</span>';
+    if (btn) { btn.disabled = true; btn.textContent = "Analyzing..."; }
+  }
+  
+  var histList = [];
+  if (S.history) {
+    var keys = Object.keys(S.history).sort().slice(-30);
+    keys.forEach(function(k) {
+      var entry = S.history[k];
+      if (entry) {
+        histList.push({
+          date: k.replace('rd-v7-', ''),
+          score: entry.pct || 0,
+          review: entry.review || "",
+          scratchpad: entry.scratchpad || ""
+        });
+      }
+    });
+  }
+  
+  var dsccSummary = "DSCC-5: " + (S.dsccWatched.dscc5 || 0) + "/" + (S.dsccTotal.dscc5 || 8) +
+                    ", DSCC-6: " + (S.dsccWatched.dscc6 || 0) + "/" + (S.dsccTotal.dscc6 || 7) +
+                    ", DSCC-7: " + (S.dsccWatched.dscc7 || 0) + "/" + (S.dsccTotal.dscc7 || 12) +
+                    ", DSCC-8: " + (S.dsccWatched.dscc8 || 0) + "/" + (S.dsccTotal.dscc8 || 6);
+  var sem3Summary = S.mathSem3 ? S.mathSem3.filter(Boolean).length + "/" + MATH_SEM3_ALL.length + " topics done" : "0 topics done";
+  
+  var fallbackReport = "<strong>📊 Fallback Intelligence Report (Offline/No Key):</strong><br/><br/>" +
+    "• <strong>30-Day Activity:</strong> " + histList.length + " days of historical logs tracked.<br/>" +
+    "• <strong>DSCC watched progress:</strong> " + dsccSummary + "<br/>" +
+    "• <strong>Semester 3 backlogs progress:</strong> " + sem3Summary + "<br/><br/>" +
+    "<em>Insight: Configure your Gemini API Key in Settings to unlock deep behavioral pattern intelligence and study suggestions.</em>";
+
+  var keyToUse = S.aiKey || GEMINI_KEY;
+  if (!navigator.onLine || !keyToUse) {
+    S.weeklyReport = fallbackReport;
+    if (force) {
+      S.lastReportDate = todayStr;
+      saveState(true);
+    }
+    if (container) container.innerHTML = S.weeklyReport;
+    if (btn) { btn.disabled = false; btn.textContent = "⚡ Run Analysis"; }
+    return;
+  }
+  
+  try {
+    var prompt = "You are an elite data scientist and cognitive psychologist. Write a detailed, realistic Weekly Intelligence Report for Rudranil." +
+      "\n- Focus on real, actionable pattern analysis of his habits, study delays, and review notes." +
+      "\n- Strictly avoid motivational fluff or generic advice. Be objective, sharp, and highly analytical." +
+      "\n- Feeds from last 30 days history logs: " + JSON.stringify(histList) +
+      "\n- DSCC progress: " + dsccSummary +
+      "\n- Semester 3 backlog progress: " + sem3Summary +
+      "\n- Exam countdowns: Sem 4 (" + getDaysRemaining(S.sem4ExamDate || "2026-06-15") + " days left), Sem 3 (" + getDaysRemaining(S.sem3ExamDate || "2027-01-15") + " days left)." +
+      "\nStructure the report with clean HTML formatting: separate sections, bullet points, and strong tags. Keep the tone elite, authoritative, and helpful.";
+      
+    var reqBody = {
+      contents: [{role: "user", parts: [{text: prompt}]}]
+    };
+    
+    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + keyToUse, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(reqBody)
+    });
+    
+    if (!res.ok) throw new Error("Gemini API call failed");
+    var data = await res.json();
+    var replyText = data.candidates[0].content.parts[0].text.trim();
+    
+    replyText = replyText.replace(/```html\s*([\s\S]*?)\s*```/g, "$1");
+    replyText = replyText.replace(/```\s*([\s\S]*?)\s*```/g, "$1");
+    
+    S.weeklyReport = replyText;
+    S.lastReportDate = todayStr;
+    saveState(true);
+    if (container) container.innerHTML = S.weeklyReport;
+  } catch (err) {
+    console.error("Weekly report generation failed, using fallback:", err);
+    S.weeklyReport = fallbackReport;
+    if (container) container.innerHTML = S.weeklyReport;
+  }
+  
+  if (btn) { btn.disabled = false; btn.textContent = "⚡ Run Analysis"; }
 }
 
 loadState();

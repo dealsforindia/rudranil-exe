@@ -17,6 +17,31 @@
   </div>
 
   <main class="dashboard" id="dashboard">
+    <!-- MORNING BRIEF -->
+    <div class="card brief-card" id="brief-card">
+      <div class="brief-inner">
+        <div class="brief-header">
+          <span class="brief-title">✨ Morning Brief</span>
+          <span class="brief-date" id="brief-date-el"></span>
+        </div>
+        <div class="brief-content" id="brief-content-el">Generating brief...</div>
+      </div>
+    </div>
+
+    <!-- EXAM TIMERS -->
+    <div class="timers-container" id="timers-container">
+      <div class="card timer-card sem4-timer-card">
+        <div class="timer-card-title">🎓 Sem 4 Exams</div>
+        <div class="timer-card-days" id="sem4-days">-- days</div>
+        <div class="timer-card-sub" id="sem4-date-label">June 15, 2026</div>
+      </div>
+      <div class="card timer-card sem3-timer-card">
+        <div class="timer-card-title">📚 Sem 3 Exams</div>
+        <div class="timer-card-days" id="sem3-days">-- days</div>
+        <div class="timer-card-sub" id="sem3-date-label">January 15, 2027</div>
+      </div>
+    </div>
+
     <div class="col col-left">
       <div class="card focus-card">
         <div class="focus-inner">
@@ -41,6 +66,11 @@
             <div class="timer-text">
               <div class="timer-value" id="hero-pct">0%</div>
               <div class="timer-label" id="hero-sub">completed</div>
+            </div>
+          </div>
+          <div id="topic-of-day-container" style="margin-top:16px; width:100%; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; text-align:center;">
+            <div id="topic-of-day-btn" class="topic-btn" style="display:inline-block; font-size:12px; font-weight:600; color:#e0c3fc; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:6px 14px; border-radius:100px; cursor:pointer; transition:all 0.2s; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              📖 Today: Loading...
             </div>
           </div>
         </div>
@@ -341,46 +371,24 @@
 
   <!-- Analytics Modal -->
   <div class="cal-modal-overlay" id="analytics-modal-overlay" onclick="closeAnalytics(event)">
-    <div class="cal-modal" style="max-width:400px;">
-      <div class="cal-modal-date">Weekly Insights</div>
-      <div class="cal-modal-score tier-purple" id="analytics-score">7-Day Trend</div>
+    <div class="cal-modal" id="analytics-modal-content" style="max-width:460px; width:95%;">
+      <div class="cal-modal-date" style="display:flex; align-items:center; gap:8px;">
+        <span>📊 Weekly Intelligence</span>
+      </div>
+      <div class="cal-modal-score tier-purple" style="font-size:12px; margin-bottom:16px;">Last 30 Days Deep Analysis</div>
       
-      <!-- Chart Area -->
-      <div class="analytics-chart">
-        <div class="chart-bars" id="analytics-bars">
-          <!-- Bars injected via JS -->
-        </div>
-        <div class="chart-labels" id="analytics-labels">
-          <!-- Labels injected via JS -->
-        </div>
+      <div id="weekly-report-container" style="font-size:12px; color:rgba(255,255,255,0.85); line-height:1.65; max-height:50vh; overflow-y:auto; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:16px; border-radius:12px; margin-bottom:16px; text-align:left;">
+        <span style="color:rgba(255,255,255,0.4); font-style:italic;">No report compiled yet. Click below to generate analysis.</span>
       </div>
       
-      <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-        <div style="text-align:center; flex:1;">
-          <div style="font-size:24px; font-weight:800; color:#fff;" id="an-avg">0%</div>
-          <div style="font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.05em;">Avg Score</div>
-        </div>
-        <div style="text-align:center; flex:1; border-left:1px solid rgba(255,255,255,0.1);">
-          <div style="font-size:24px; font-weight:800; color:#a855f7;" id="an-streak">0</div>
-          <div style="font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.05em;">Days >70%</div>
-        </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <button onclick="generateWeeklyReport(true)" class="btn-generate-report" id="btn-trigger-report" style="padding:12px; font-size:13px; font-weight:700; border-radius:12px; background:linear-gradient(135deg, #a855f7, #7c3aed); border:none; color:#fff; cursor:pointer; box-shadow:0 4px 15px rgba(168,85,247,0.3); transition:all 0.2s;">
+          ⚡ Run Analysis
+        </button>
+        <button class="cal-modal-close" style="margin-top:0; padding:12px; font-size:13px; font-weight:700; border-radius:12px;" onclick="closeAnalytics()">
+          Close
+        </button>
       </div>
-      
-      <!-- AI Weekly Report Card -->
-      <div class="ai-report-card">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <div style="font-size:13px; font-weight:700; color:#fff; display:flex; align-items:center; gap:6px;">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#a855f7" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            AI Weekly Report Card
-          </div>
-          <button onclick="generateAIReport()" class="btn-generate-report" id="btn-gen-report">Analyze Week</button>
-        </div>
-        <div id="ai-report-content" style="font-size:12px; color:rgba(255,255,255,0.7); line-height:1.6; min-height:60px; background:rgba(0,0,0,0.2); padding:12px; border-radius:10px;">
-          Click "Analyze Week" to have Gemini read your last 7 days of reviews and stats to generate insights.
-        </div>
-      </div>
-      
-      <button class="cal-modal-close" style="margin-top:16px;" onclick="closeAnalytics()">Close Insights</button>
     </div>
   </div>
 
@@ -392,7 +400,7 @@
   </script>  <!-- FAB: Floating Quick Control (mobile only) -->
   <div id="fab-overlay" onclick="closeFAB()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998;"></div>
   <div id="fab-panel" class="fab-panel">
-    <div class="fab-panel-title">Quick Control <span id="sync-st" style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace; margin-left:8px;"></span></div>
+    <div class="fab-panel-title">Quick Control <span id="sync-st-fab" style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace; margin-left:8px;"></span></div>
     <div class="fab-panel-buttons">
       <button class="action-btn btn-sync" onclick="saveState(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>Save &amp; Sync</button>
       <button class="action-btn btn-pull" onclick="pullFromCloud(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 14l8 6 8-6"/><path d="M4 10l8-6 8 6"/></svg></span>Pull Cloud</button>

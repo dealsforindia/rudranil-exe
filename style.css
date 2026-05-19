@@ -300,7 +300,7 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   background: linear-gradient(160deg, #1e1e24, #1a1a1e);
 }
 .action-title { font-size:18px; font-weight:800; color:#fff; margin-bottom:14px; }
-.action-buttons { display:flex; flex-direction:column; gap:10px; }
+.action-buttons { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
 .action-btn {
   display:flex; align-items:center; gap:12px; padding:14px 20px;
   border-radius:16px; border:none; cursor:pointer;
@@ -1080,6 +1080,98 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
 }
 .mday:active {
   transform: scale(0.95);
+}
+/* ── MORNING BRIEF CARD ── */
+.brief-card {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(124,58,237,0.1) 100%) !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+  box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  padding: 20px !important;
+}
+.brief-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.brief-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brief-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: #e0c3fc;
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+.brief-date {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+}
+.brief-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ── EXAM TIMERS ── */
+.timers-container {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.timer-card {
+  padding: 16px !important;
+  background: linear-gradient(160deg, #1e1e24, #151518) !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+.timer-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 6px;
+}
+.timer-card-days {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.timer-card-sub {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Timer countdown colors */
+.timer-green {
+  color: #2ecc40;
+  text-shadow: 0 0 10px rgba(46, 204, 64, 0.2);
+}
+.timer-yellow {
+  color: #f1c40f;
+  text-shadow: 0 0 10px rgba(241, 196, 15, 0.2);
+}
+.timer-red {
+  color: #ff4757;
+  text-shadow: 0 0 10px rgba(255, 71, 135, 0.3);
+}
+
+@media (max-width:768px) {
+  .timers-container { gap: 10px; }
+  .timer-card { padding: 12px !important; }
+  .timer-card-days { font-size: 22px; }
 }
 
 /* Responsive */

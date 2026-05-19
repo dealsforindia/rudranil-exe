@@ -1188,3 +1188,32 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
     font-size: 9px;
   }
 }
+
+/* ── Weekly Intelligence Report Dark Theme ── */
+#weekly-report-container * {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+#weekly-report-container strong {
+  color: #e0c3fc !important; /* purple accent */
+}
+#weekly-report-container h1, 
+#weekly-report-container h2, 
+#weekly-report-container h3, 
+#weekly-report-container h4 {
+  color: #a855f7 !important; /* purple accent */
+  margin-top: 14px !important;
+  margin-bottom: 8px !important;
+  font-weight: 700 !important;
+}
+#weekly-report-container ul, 
+#weekly-report-container ol {
+  padding-left: 20px !important;
+  margin: 10px 0 !important;
+}
+#weekly-report-container li {
+  margin-bottom: 6px !important;
+}
+#weekly-report-container p {
+  margin-bottom: 10px !important;
+}

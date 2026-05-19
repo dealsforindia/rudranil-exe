@@ -692,9 +692,25 @@ function renderPending() {
 
 function saveReviewOnly() {
   if (!S.history) S.history = {};
-  if (!S.history[TODAY_KEY]) S.history[TODAY_KEY] = {};
-  S.history[TODAY_KEY].review = S.review || "";
-  S.history[TODAY_KEY].scratchpad = S.scratchpad || "";
+  var cnt = countDailies();
+  var total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+  var pct = Math.round((cnt / total) * 100);
+  
+  S.history[TODAY_KEY] = {
+    pct: pct,
+    review: S.review || "",
+    scratchpad: S.scratchpad || "",
+    fsVid: S.fsVid,
+    pyVid: S.pyVid,
+    exercises: JSON.parse(JSON.stringify(S.exercises || [])),
+    dailyMode: S.dailyMode,
+    dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || [])),
+    mathSem3: JSON.parse(JSON.stringify(S.mathSem3 || [])),
+    mathSem1: JSON.parse(JSON.stringify(S.mathSem1 || [])),
+    sem4: JSON.parse(JSON.stringify(S.sem4 || {})),
+    dsccWatched: JSON.parse(JSON.stringify(S.dsccWatched || {dscc5:0, dscc6:2, dscc7:0, dscc8:0})),
+    dsccTotal: JSON.parse(JSON.stringify(S.dsccTotal || {dscc5:8, dscc6:7, dscc7:12, dscc8:6}))
+  };
   
   // Directly save to localStorage and trigger sync debounce
   try {
@@ -814,7 +830,9 @@ function saveState(skipCloud) {
     dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || [])),
     mathSem3: JSON.parse(JSON.stringify(S.mathSem3 || [])),
     mathSem1: JSON.parse(JSON.stringify(S.mathSem1 || [])),
-    sem4: JSON.parse(JSON.stringify(S.sem4 || {}))
+    sem4: JSON.parse(JSON.stringify(S.sem4 || {})),
+    dsccWatched: JSON.parse(JSON.stringify(S.dsccWatched || {dscc5:0, dscc6:2, dscc7:0, dscc8:0})),
+    dsccTotal: JSON.parse(JSON.stringify(S.dsccTotal || {dscc5:8, dscc6:7, dscc7:12, dscc8:6}))
   };
 
   try {
@@ -1268,16 +1286,8 @@ async function sendAI() {
 
 // === HISTORY PRUNING (keep max 90 days) ===
 function pruneHistory() {
-  if (!S.history) return;
-  var keys = Object.keys(S.history);
-  if (keys.length <= 90) return;
-  keys.sort(function(a, b) {
-    var pA = a.replace('rd-v7-', '').split('-').map(Number);
-    var pB = b.replace('rd-v7-', '').split('-').map(Number);
-    return new Date(pA[0], pA[1]-1, pA[2]) - new Date(pB[0], pB[1]-1, pB[2]);
-  });
-  var toRemove = keys.length - 90;
-  for (var i = 0; i < toRemove; i++) delete S.history[keys[i]];
+  // Disabled per user request to retain past data permanently
+  return;
 }
 
 function loadState() {
@@ -1458,45 +1468,102 @@ function openCalDayDetail(dayNum, month, year) {
   scoreEl.className = 'cal-modal-score ' + tierInfo.cls;
   document.getElementById('cal-modal-bar').style.width = pct + '%';
 
-  // Build summary using hist if available
-  var isToday = isCurrentMonth && dayNum === TODAY_DAY;
-  // Borrow the existing summary builder — temporarily store vars
-  var _tmpMonth = CURRENT_MONTH; var _tmpYear = CURRENT_YEAR;
-  // Directly build summary
+  // Build comprehensive daily snapshot
   var summary = '';
   var sectionStyle = 'margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1);';
-  var labelStyle = 'font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;';
+  var labelStyle = 'font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.4); margin-bottom:6px; font-weight:700;';
 
+  var isToday = isCurrentMonth && dayNum === TODAY_DAY;
+  
+  // Extract daily task list
+  var dailiesList = [];
   if (isToday) {
-    var total2 = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
-    var done2 = countDailies();
-    var lh = '<ul style="margin:8px 0; padding-left:0; list-style:none; font-size:13px; line-height:1.6;">';
     if (S.dailyMode === 'custom') {
-      S.customDailies.forEach(function(d) { lh += '<li><span style="display:inline-block;width:20px;">' + (d.d ? '\u2705' : '\u274c') + '</span> ' + d.n + '</li>'; });
+      dailiesList = (S.customDailies || []).map(function(d) { return { n: d.n, d: d.d }; });
     } else {
-      DAILIES.forEach(function(d, i) { lh += '<li><span style="display:inline-block;width:20px;">' + (S.dailies[i] ? '\u2705' : '\u274c') + '</span> ' + d + '</li>'; });
+      dailiesList = DAILIES.map(function(d, i) { return { n: d, d: S.dailies[i] }; });
     }
-    lh += '</ul>';
-    summary = '<div style="font-size:14px;color:#fff;font-weight:600;">Today: ' + done2 + '/' + total2 + ' dailies completed.</div>' + lh;
-  } else if (hist) {
-    var lHTML = '';
-    if (hist.dailies && hist.dailies.length > 0) {
-      lHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Dailies</div><ul style="margin:0;padding-left:0;list-style:none;font-size:12px;line-height:1.6;color:rgba(255,255,255,0.7);">';
-      if (hist.dailyMode === 'custom') {
-        hist.dailies.forEach(function(d) { lHTML += '<li><span style="display:inline-block;width:18px;">' + (d.d ? '\u2705' : '\u274c') + '</span> ' + d.n + '</li>'; });
-      } else {
-        hist.dailies.forEach(function(done, i) { lHTML += '<li><span style="display:inline-block;width:18px;">' + (done ? '\u2705' : '\u274c') + '</span> ' + (DAILIES[i] || 'Task') + '</li>'; });
-      }
-      lHTML += '</ul></div>';
+  } else if (hist && hist.dailies) {
+    if (hist.dailyMode === 'custom') {
+      dailiesList = hist.dailies.map(function(d) { return { n: d.n, d: d.d }; });
+    } else {
+      dailiesList = hist.dailies.map(function(done, i) { return { n: DAILIES[i] || 'Task', d: done }; });
     }
-    if (hist.mathSem3) { var s3 = hist.mathSem3.filter(Boolean).length; lHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Math Progress</div><div style="font-size:12px;color:rgba(255,255,255,0.6);">Sem 3: <strong style="color:#a855f7;">' + s3 + '/' + MATH_SEM3_ALL.length + '</strong></div></div>'; }
-    if (hist.review) { lHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Review</div><div style="background:rgba(0,0,0,0.3);padding:10px 12px;border-radius:8px;border-left:3px solid #a855f7;color:#e0c3fc;font-style:italic;font-size:13px;">"' + hist.review + '"</div></div>'; }
-    summary = '<div style="font-size:14px;color:#fff;font-weight:600;">Achieved ' + pct + '% of goals</div>' + lHTML;
-  } else if (pct > 0) {
-    summary = '<div style="font-size:14px;color:#fff;font-weight:600;">Achieved ' + pct + '%</div><div style="font-size:12px;margin-top:8px;color:rgba(255,255,255,0.4);">(No detailed diary snapshot available)</div>';
-  } else {
-    summary = 'No activity was recorded for this day.';
   }
+
+  // Extract DSCC watch state
+  var dsccW = isToday ? S.dsccWatched : (hist && hist.dsccWatched ? hist.dsccWatched : null);
+  var dsccT = isToday ? S.dsccTotal : (hist && hist.dsccTotal ? hist.dsccTotal : S.dsccTotal);
+  if (!dsccT) dsccT = {dscc5:8, dscc6:7, dscc7:12, dscc8:6};
+
+  // Extract push-pull-leg exercises
+  var exList = isToday ? (S.exercises || []) : (hist && hist.exercises ? hist.exercises : []);
+
+  // Extract review and scratchpad
+  var reviewText = isToday ? S.review : (hist ? hist.review : '');
+  var scratchpadText = isToday ? S.scratchpad : (hist ? hist.scratchpad : '');
+
+  // 1. Productivity Score Header
+  summary += '<div style="font-size:15px;color:#fff;font-weight:700;margin-bottom:12px;">Achieved ' + pct + '% of Goals</div>';
+
+  // 2. Dailies List
+  summary += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Daily Execution Tasks</div>';
+  if (dailiesList.length > 0) {
+    summary += '<ul style="margin:0;padding-left:0;list-style:none;font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);">';
+    dailiesList.forEach(function(item) {
+      summary += '<li style="display:flex;align-items:center;margin-bottom:4px;"><span style="display:inline-block;width:22px;font-size:14px;">' + (item.d ? '✅' : '❌') + '</span> ' + item.n + '</li>';
+    });
+    summary += '</ul>';
+  } else {
+    summary += '<div style="font-size:12px;color:rgba(255,255,255,0.4);font-style:italic;">No daily tasks recorded.</div>';
+  }
+  summary += '</div>';
+
+  // 3. DSCC Classes Watched
+  summary += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">DSCC Lecture Progress</div>';
+  if (dsccW) {
+    summary += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;color:rgba(255,255,255,0.85);">';
+    summary += '<div>DSCC-5: <strong style="color:#a855f7;">' + (dsccW.dscc5 || 0) + '/' + (dsccT.dscc5 || 8) + '</strong></div>';
+    summary += '<div>DSCC-6: <strong style="color:#a855f7;">' + (dsccW.dscc6 || 0) + '/' + (dsccT.dscc6 || 7) + '</strong></div>';
+    summary += '<div>DSCC-7: <strong style="color:#a855f7;">' + (dsccW.dscc7 || 0) + '/' + (dsccT.dscc7 || 12) + '</strong></div>';
+    summary += '<div>DSCC-8: <strong style="color:#a855f7;">' + (dsccW.dscc8 || 0) + '/' + (dsccT.dscc8 || 6) + '</strong></div>';
+    summary += '</div>';
+  } else {
+    summary += '<div style="font-size:12px;color:rgba(255,255,255,0.4);font-style:italic;">No lecture progress recorded for this day.</div>';
+  }
+  summary += '</div>';
+
+  // 4. Exercises Done/Not Done
+  summary += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">PPL Workout Exercises</div>';
+  if (exList.length > 0) {
+    summary += '<ul style="margin:0;padding-left:0;list-style:none;font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);">';
+    exList.forEach(function(ex) {
+      summary += '<li style="display:flex;align-items:center;margin-bottom:4px;"><span style="display:inline-block;width:22px;font-size:14px;">' + (ex.done ? '✅' : '❌') + '</span> ' + ex.n + ' <span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:6px;">(' + ex.s + ')</span></li>';
+    });
+    summary += '</ul>';
+  } else {
+    summary += '<div style="font-size:12px;color:rgba(255,255,255,0.4);font-style:italic;">No exercises recorded.</div>';
+  }
+  summary += '</div>';
+
+  // 5. End-of-Day Review
+  summary += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">End-of-Day Review</div>';
+  if (reviewText) {
+    summary += '<div style="background:rgba(168,85,247,0.1);padding:10px 14px;border-radius:10px;border-left:3px solid #a855f7;color:#e0c3fc;font-style:italic;font-size:13px;line-height:1.5;">"' + reviewText + '"</div>';
+  } else {
+    summary += '<div style="font-size:12px;color:rgba(255,255,255,0.4);font-style:italic;">No review notes captured for this day.</div>';
+  }
+  summary += '</div>';
+
+  // 6. Scratchpad / Active Brainstorm
+  summary += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Scratchpad / Active Brainstorm</div>';
+  if (scratchpadText) {
+    summary += '<pre style="background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);color:rgba(255,255,255,0.8);font-family:Consolas,monospace;font-size:12px;white-space:pre-wrap;margin:0;max-height:150px;overflow-y:auto;text-align:left;">' + scratchpadText + '</pre>';
+  } else {
+    summary += '<div style="font-size:12px;color:rgba(255,255,255,0.4);font-style:italic;">Scratchpad was empty.</div>';
+  }
+  summary += '</div>';
+  
   document.getElementById('cal-modal-summary').innerHTML = summary;
   document.getElementById('cal-modal-overlay').classList.add('active');
   document.body.style.overflow = 'hidden';
@@ -1751,7 +1818,7 @@ async function generateWeeklyReport(force) {
       "\n- DSCC progress: " + dsccSummary +
       "\n- Semester 3 backlog progress: " + sem3Summary +
       "\n- Exam countdowns: Sem 4 (" + getDaysRemaining(S.sem4ExamDate || "2026-06-15") + " days left), Sem 3 (" + getDaysRemaining(S.sem3ExamDate || "2027-01-15") + " days left)." +
-      "\nStructure the report with clean HTML formatting: separate sections, bullet points, and strong tags. Keep the tone elite, authoritative, and helpful.";
+      "\n- Strict styling: The response is rendered directly in a dark-themed glassmorphic card. Never wrap in light/white backgrounds or styled cards. Only output clean, native semantic HTML tags like <h3>, <p>, <ul>, <li>, and <strong>. Keep the tone elite, authoritative, and helpful.";
       
     var reqBody = {
       contents: [{role: "user", parts: [{text: prompt}]}]

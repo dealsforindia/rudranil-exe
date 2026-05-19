@@ -1004,19 +1004,10 @@ async function pushToCloud() {
 
 // === CLOUD PULL — Timestamp-based smart merge ===
 let _isPulling = false;
-let _pullRetryTimer = null;
 async function pullFromCloud() {
   if (!S.gistToken || !S.gistId) return;
   if (_isPulling) return; // Prevent concurrent pulls
   _isPulling = true;
-  
-  // Don't even try if we know we're offline
-  if (!navigator.onLine) {
-    updateSyncIndicator("offline");
-    updateCloudStatus("Offline");
-    _isPulling = false;
-    return;
-  }
   
   updateSyncIndicator("pulling");
   updateCloudStatus("Pulling...");
@@ -1068,7 +1059,8 @@ async function pullFromCloud() {
       S.savedKey = TODAY_KEY;
       S.savedMonth = CURRENT_MONTH;
       localStorage.setItem("rudranil-v7", JSON.stringify(S));
-      updateSyncIndicator("in-sync");
+      
+      updateSyncIndicator("pulled");
       updateCloudStatus("Synced");
     } else if (localTime > cloudTime) {
       // Local is newer — push local to cloud
@@ -1083,21 +1075,25 @@ async function pullFromCloud() {
       updateCloudStatus("Synced");
     }
   } catch (e) {
-    console.warn("Cloud pull error (will retry silently):", e);
-    _isPulling = false;
-    // Silent retry after 5s instead of showing error immediately
-    if (_pullRetryTimer) clearTimeout(_pullRetryTimer);
-    _pullRetryTimer = setTimeout(function() {
-      if (navigator.onLine && S.gistToken && S.gistId) {
-        pullFromCloud();
-      } else {
-        updateSyncIndicator("offline");
-        updateCloudStatus("Offline — will sync when connected");
-      }
-    }, 5000);
+    console.error("Cloud pull error:", e);
+    _isPulling = false; // reset immediately so retries are allowed
+    if (!navigator.onLine) {
+      updateSyncIndicator("offline");
+      updateCloudStatus("Offline", true);
+    } else {
+      // Transient error — silently retry once after 5 seconds
+      updateSyncIndicator("error");
+      updateCloudStatus("Pull Error", true);
+      setTimeout(function() {
+        if (S.gistToken && S.gistId && navigator.onLine) {
+          pullFromCloud();
+        }
+      }, 5000);
+    }
     return;
   }
   _isPulling = false;
+}
 
 // === AUTO-SYNC: Poll every 30 seconds ===
 let _pollTimer = null;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,9 +10,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <!-- PENDING BANNER -->
   <div class="pending-banner" id="pending-banner" style="display:none">
@@ -50,7 +54,10 @@
         <div class="focus-inner">
           <div class="focus-header">
             <div class="focus-icon">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+              <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <polyline points="12 7 12 12 15 14" />
+              </svg>
             </div>
             <span class="focus-title">Daily Execution</span>
           </div>
@@ -58,21 +65,23 @@
             <svg viewBox="0 0 160 160">
               <defs>
                 <linearGradient id="focusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#a855f7"/>
-                  <stop offset="50%" stop-color="#c084fc"/>
-                  <stop offset="100%" stop-color="#e8a0bf"/>
+                  <stop offset="0%" stop-color="#a855f7" />
+                  <stop offset="50%" stop-color="#c084fc" />
+                  <stop offset="100%" stop-color="#e8a0bf" />
                 </linearGradient>
               </defs>
-              <circle class="ring-bg" cx="80" cy="80" r="70"/>
-              <circle class="ring-progress" id="hero-ring-progress" cx="80" cy="80" r="70"/>
+              <circle class="ring-bg" cx="80" cy="80" r="70" />
+              <circle class="ring-progress" id="hero-ring-progress" cx="80" cy="80" r="70" />
             </svg>
             <div class="timer-text">
               <div class="timer-value" id="hero-pct">0%</div>
               <div class="timer-label" id="hero-sub">completed</div>
             </div>
           </div>
-          <div id="topic-of-day-container" style="margin-top:16px; width:100%; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; text-align:center;">
-            <div id="topic-of-day-btn" class="topic-btn" style="display:inline-block; font-size:12px; font-weight:600; color:#e0c3fc; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:6px 14px; border-radius:100px; cursor:pointer; transition:all 0.2s; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          <div id="topic-of-day-container"
+            style="margin-top:16px; width:100%; border-top:1px solid rgba(255,255,255,0.06); padding-top:12px; text-align:center;">
+            <div id="topic-of-day-btn" class="topic-btn"
+              style="display:inline-block; font-size:12px; font-weight:600; color:#e0c3fc; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.3); padding:6px 14px; border-radius:100px; cursor:pointer; transition:all 0.2s; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
               📖 Today: Loading...
             </div>
           </div>
@@ -83,7 +92,11 @@
         <div class="progress-inner">
           <div class="progress-header">
             <div class="progress-bar-icon">
-              <svg viewBox="0 0 24 24"><rect x="3" y="14" width="4" height="7" rx="1"/><rect x="10" y="9" width="4" height="12" rx="1"/><rect x="17" y="4" width="4" height="17" rx="1"/></svg>
+              <svg viewBox="0 0 24 24">
+                <rect x="3" y="14" width="4" height="7" rx="1" />
+                <rect x="10" y="9" width="4" height="12" rx="1" />
+                <rect x="17" y="4" width="4" height="17" rx="1" />
+              </svg>
             </div>
             <span class="progress-title">System Progress</span>
           </div>
@@ -92,27 +105,42 @@
               <svg viewBox="0 0 120 120">
                 <defs>
                   <linearGradient id="greenRing" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#2ecc40"/><stop offset="100%" stop-color="#27ae60"/>
+                    <stop offset="0%" stop-color="#2ecc40" />
+                    <stop offset="100%" stop-color="#27ae60" />
                   </linearGradient>
                   <linearGradient id="yellowRing" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#f1c40f"/><stop offset="100%" stop-color="#f39c12"/>
+                    <stop offset="0%" stop-color="#f1c40f" />
+                    <stop offset="100%" stop-color="#f39c12" />
                   </linearGradient>
                   <linearGradient id="purpleRing" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7c3aed"/>
+                    <stop offset="0%" stop-color="#a855f7" />
+                    <stop offset="100%" stop-color="#7c3aed" />
                   </linearGradient>
                 </defs>
-                <circle class="donut-ring" cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
-                <circle class="donut-ring" id="ring-fs" cx="60" cy="60" r="50" stroke="url(#greenRing)" stroke-width="12" stroke-dasharray="0 314"/>
-                <circle class="donut-ring" cx="60" cy="60" r="36" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
-                <circle class="donut-ring" id="ring-py" cx="60" cy="60" r="36" stroke="url(#yellowRing)" stroke-width="12" stroke-dasharray="0 226"/>
-                <circle class="donut-ring" cx="60" cy="60" r="22" stroke="rgba(255,255,255,0.06)" stroke-width="12"/>
-                <circle class="donut-ring" id="ring-month" cx="60" cy="60" r="22" stroke="url(#purpleRing)" stroke-width="12" stroke-dasharray="0 138"/>
+                <circle class="donut-ring" cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
+                <circle class="donut-ring" id="ring-fs" cx="60" cy="60" r="50" stroke="url(#greenRing)"
+                  stroke-width="12" stroke-dasharray="0 314" />
+                <circle class="donut-ring" cx="60" cy="60" r="36" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
+                <circle class="donut-ring" id="ring-py" cx="60" cy="60" r="36" stroke="url(#yellowRing)"
+                  stroke-width="12" stroke-dasharray="0 226" />
+                <circle class="donut-ring" cx="60" cy="60" r="22" stroke="rgba(255,255,255,0.06)" stroke-width="12" />
+                <circle class="donut-ring" id="ring-month" cx="60" cy="60" r="22" stroke="url(#purpleRing)"
+                  stroke-width="12" stroke-dasharray="0 138" />
               </svg>
             </div>
             <div class="progress-stats">
-              <div class="stat-item"><div class="stat-dot green"></div><span class="stat-value" id="stat-fs">0</span><span class="stat-unit">%</span><span class="stat-label">Full Stack</span></div>
-              <div class="stat-item"><div class="stat-dot yellow"></div><span class="stat-value" id="stat-py">0</span><span class="stat-unit">%</span><span class="stat-label">Python</span></div>
-              <div class="stat-item"><div class="stat-dot purple"></div><span class="stat-value" id="stat-month">0</span><span class="stat-unit">d</span><span class="stat-label">Productive</span></div>
+              <div class="stat-item">
+                <div class="stat-dot green"></div><span class="stat-value" id="stat-fs">0</span><span
+                  class="stat-unit">%</span><span class="stat-label">Full Stack</span>
+              </div>
+              <div class="stat-item">
+                <div class="stat-dot yellow"></div><span class="stat-value" id="stat-py">0</span><span
+                  class="stat-unit">%</span><span class="stat-label">Python</span>
+              </div>
+              <div class="stat-item">
+                <div class="stat-dot purple"></div><span class="stat-value" id="stat-month">0</span><span
+                  class="stat-unit">d</span><span class="stat-label">Productive</span>
+              </div>
             </div>
           </div>
           <div class="slider-group">
@@ -131,24 +159,31 @@
         <div class="tasks-inner row-layout">
           <div class="tasks-left">
             <svg class="tasks-list-icon" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#a855f7"/>
-              <rect x="9" y="10" width="14" height="2" rx="1" fill="#1a1a1e"/>
-              <rect x="9" y="15" width="14" height="2" rx="1" fill="#1a1a1e"/>
-              <rect x="9" y="20" width="14" height="2" rx="1" fill="#1a1a1e"/>
+              <rect width="32" height="32" rx="8" fill="#a855f7" />
+              <rect x="9" y="10" width="14" height="2" rx="1" fill="#1a1a1e" />
+              <rect x="9" y="15" width="14" height="2" rx="1" fill="#1a1a1e" />
+              <rect x="9" y="20" width="14" height="2" rx="1" fill="#1a1a1e" />
             </svg>
             <div class="tasks-count" id="dailies-count">0/7</div>
             <div class="tasks-subtitle">Today's Dailies</div>
             <div style="display:flex; margin-top:12px; background:rgba(0,0,0,0.3); border-radius:6px; overflow:hidden;">
-              <button id="mode-default-btn" onclick="setDailyMode('default')" style="flex:1; border:none; background:#a855f7; color:#fff; font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Default</button>
-              <button id="mode-custom-btn" onclick="setDailyMode('custom')" style="flex:1; border:none; background:transparent; color:rgba(255,255,255,0.5); font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Custom</button>
+              <button id="mode-default-btn" onclick="setDailyMode('default')"
+                style="flex:1; border:none; background:#a855f7; color:#fff; font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Default</button>
+              <button id="mode-custom-btn" onclick="setDailyMode('custom')"
+                style="flex:1; border:none; background:transparent; color:rgba(255,255,255,0.5); font-size:11px; font-weight:700; padding:6px; cursor:pointer; transition:background 0.2s;">Custom</button>
             </div>
           </div>
           <div class="tasks-right">
             <div id="dailies-list"></div>
             <div id="custom-dailies-input" style="display:none; gap:6px; margin-top:10px;">
-              <input type="time" id="cd-time" class="add-task-input" style="width:90px; padding:6px 4px; font-size:11px; margin:0; text-align:center; color-scheme: dark;">
-              <input type="text" id="cd-name" class="add-task-input" placeholder="Task name..." onkeypress="if(event.key==='Enter') addCustomDaily()" style="flex:1; padding:6px 10px; font-size:11px; margin:0;">
-              <button class="add-task-input" style="width:45px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; padding:6px; font-size:11px; margin:0;" onclick="addCustomDaily()">Add</button>
+              <input type="time" id="cd-time" class="add-task-input"
+                style="width:90px; padding:6px 4px; font-size:11px; margin:0; text-align:center; color-scheme: dark;">
+              <input type="text" id="cd-name" class="add-task-input" placeholder="Task name..."
+                onkeypress="if(event.key==='Enter') addCustomDaily()"
+                style="flex:1; padding:6px 10px; font-size:11px; margin:0;">
+              <button class="add-task-input"
+                style="width:45px; cursor:pointer; background:rgba(255,255,255,0.1); border:none; padding:6px; font-size:11px; margin:0;"
+                onclick="addCustomDaily()">Add</button>
             </div>
           </div>
         </div>
@@ -157,12 +192,16 @@
       <div class="card tasks-card">
         <div class="tasks-inner">
           <div class="progress-header" style="margin-bottom:0;"><span class="progress-title">Workout Matrix</span></div>
-          <div class="ppl-indicator" id="ppl-day-label" style="font-size:12px; font-weight:700; color:#e8a0bf; margin:6px 0 4px; letter-spacing:0.04em;">Today: Push Day + Abs</div>
+          <div class="ppl-indicator" id="ppl-day-label"
+            style="font-size:12px; font-weight:700; color:#e8a0bf; margin:6px 0 4px; letter-spacing:0.04em;">Today: Push
+            Day + Abs</div>
           <div class="tasks-right" id="ex-list"></div>
           <div style="display:flex; gap:10px;">
             <input type="text" id="ex-name-in" class="add-task-input" placeholder="Exercise...">
             <input type="text" id="ex-sets-in" class="add-task-input" placeholder="Sets" style="width:80px;">
-            <button class="add-task-input" style="width:60px; cursor:pointer; background:rgba(255,255,255,0.1); border:none;" onclick="addEx()">Add</button>
+            <button class="add-task-input"
+              style="width:60px; cursor:pointer; background:rgba(255,255,255,0.1); border:none;"
+              onclick="addEx()">Add</button>
           </div>
         </div>
       </div>
@@ -172,7 +211,10 @@
         <div class="ai-inner">
           <div class="ai-header">
             <div class="ai-logo">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor"
+                  stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
             </div>
             <span class="ai-title">Life Assistant</span>
             <div class="ai-status" id="ai-status">
@@ -180,37 +222,53 @@
               <span id="ai-status-text">offline</span>
             </div>
             <button class="ai-settings-btn" onclick="toggleSettingsSetup()" title="Settings">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" width="16" height="16">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+              </svg>
             </button>
           </div>
           <!-- Settings Area -->
           <div id="settings-setup-area" class="ai-key-setup" style="display:none; margin-bottom:12px;">
-            <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px; font-weight:600;">🤖 Gemini API Settings</div>
+            <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px; font-weight:600;">🤖 Gemini API
+              Settings</div>
             <div class="ai-input-row" style="margin-bottom:8px;">
-              <input type="password" id="ai-key-input" class="add-task-input" placeholder="AIzaSy..." style="margin-top:0; flex:1; font-family:monospace;">
+              <input type="password" id="ai-key-input" class="add-task-input" placeholder="AIzaSy..."
+                style="margin-top:0; flex:1; font-family:monospace;">
             </div>
-            
-            <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px; font-weight:600; display:flex; justify-content:space-between;">
+
+            <div
+              style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px; font-weight:600; display:flex; justify-content:space-between;">
               <span>☁️ Cloud Sync (GitHub Gist)</span>
               <span id="cloud-sync-status" style="color:#2ecc40; display:none;">Synced</span>
             </div>
             <div class="ai-input-row" style="margin-bottom:4px;">
-              <input type="password" id="gist-token-input" class="add-task-input" placeholder="GitHub Token (ghp_...)" style="margin-top:0; flex:1; font-family:monospace;">
+              <input type="password" id="gist-token-input" class="add-task-input" placeholder="GitHub Token (ghp_...)"
+                style="margin-top:0; flex:1; font-family:monospace;">
             </div>
             <div class="ai-input-row">
-              <input type="text" id="gist-id-input" class="add-task-input" placeholder="Gist ID" style="margin-top:0; flex:1; font-family:monospace;">
+              <input type="text" id="gist-id-input" class="add-task-input" placeholder="Gist ID"
+                style="margin-top:0; flex:1; font-family:monospace;">
             </div>
             <div class="ai-input-row" style="margin-top:4px;">
-              <button class="ai-send-btn" onclick="saveSettings()" style="padding:8px 12px; font-size:12px; border-radius:8px; width:100%;">Save Settings & Sync</button>
+              <button class="ai-send-btn" onclick="saveSettings()"
+                style="padding:8px 12px; font-size:12px; border-radius:8px; width:100%;">Save Settings & Sync</button>
             </div>
           </div>
           <!-- Chat Area -->
           <div id="ai-chat-area" class="ai-chat-area">
             <div class="ai-messages" id="ai-messages"></div>
             <div class="ai-input-row">
-              <input type="text" id="ai-input" class="add-task-input" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter') sendAI()" style="margin-top:0; flex:1;">
+              <input type="text" id="ai-input" class="add-task-input" placeholder="Ask me anything..."
+                onkeypress="if(event.key==='Enter') sendAI()" style="margin-top:0; flex:1;">
               <button class="ai-send-btn" onclick="sendAI()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
               </button>
             </div>
             <div class="ai-hint">Your life dashboard AI — workouts, tasks, backlogs, planning</div>
@@ -222,31 +280,51 @@
     <div class="col col-right">
       <div class="card action-card">
         <div class="action-title" style="display:flex; justify-content:space-between; align-items:center;">
-          Quick Control <span id="sync-st" style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace;"></span>
+          Quick Control <span id="sync-st"
+            style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace;"></span>
         </div>
         <div class="action-buttons">
           <button class="action-btn btn-sync" onclick="saveState()">
-            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg></span>
             Save & Sync
           </button>
           <button class="action-btn btn-pull" onclick="pullFromCloud()">
-            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 14l8 6 8-6"/><path d="M4 10l8-6 8 6"/></svg></span>
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <path d="M4 14l8 6 8-6" />
+                <path d="M4 10l8-6 8 6" />
+              </svg></span>
             Pull Cloud
           </button>
           <button class="action-btn btn-clear" onclick="resetDailies()">
-            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg></span>
             Reset Dailies
           </button>
           <button class="action-btn btn-analytics" onclick="openAnalytics()">
-            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <path d="M18 20V10M12 20V4M6 20v-6" />
+              </svg></span>
             Analytics & AI
           </button>
           <button class="action-btn btn-backup" onclick="exportBackup()">
-            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg></span>
             Export Backup
           </button>
           <label class="action-btn btn-import">
-            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+            <span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg></span>
             Import Backup
             <input type="file" accept=".json" onchange="importBackup(event)" style="display:none">
           </label>
@@ -288,7 +366,9 @@
         <div class="tasks-inner">
           <div class="progress-header" style="margin-bottom:4px;" onclick="toggleBacklog('sem3-card')">
             <span class="progress-title">📚 Sem 3 Backlogs</span>
-            <span id="sem3-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/42 topics</span>
+            <span id="sem3-progress"
+              style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/42
+              topics</span>
           </div>
           <div class="fluid-bubble-wrap">
             <div style="text-align:center;">
@@ -321,7 +401,9 @@
         <div class="tasks-inner">
           <div class="progress-header" style="margin-bottom:4px;" onclick="toggleBacklog('sem1-card')">
             <span class="progress-title">📖 Sem 1 Backlogs</span>
-            <span id="sem1-progress" style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/16 topics</span>
+            <span id="sem1-progress"
+              style="font-size:11px; color:rgba(255,255,255,0.35); margin-left:auto; font-weight:600;">0/16
+              topics</span>
           </div>
           <div class="fluid-bubble-wrap">
             <div style="text-align:center;">
@@ -346,17 +428,21 @@
       <!-- SCRATCHPAD -->
       <div class="card tasks-card">
         <div class="tasks-inner">
-          <div class="progress-header" style="margin-bottom:8px;"><span class="progress-title">📝 Scratchpad</span></div>
-          <textarea id="scratchpad" class="scratchpad" placeholder="Free notes... ideas, reminders, anything..."></textarea>
+          <div class="progress-header" style="margin-bottom:8px;"><span class="progress-title">📝 Scratchpad</span>
+          </div>
+          <textarea id="scratchpad" class="scratchpad"
+            placeholder="Free notes... ideas, reminders, anything..."></textarea>
         </div>
       </div>
 
       <!-- END OF DAY REVIEW -->
       <div class="card tasks-card" id="review-card">
         <div class="tasks-inner review-locked" id="review-inner">
-          <div class="progress-header" style="margin-bottom:8px;"><span class="progress-title">🔓 End-of-Day Review</span></div>
+          <div class="progress-header" style="margin-bottom:8px;"><span class="progress-title">🔓 End-of-Day
+              Review</span></div>
           <div id="review-lock-msg" class="review-lock-msg">Complete 100% dailies to unlock</div>
-          <textarea id="review-text" class="scratchpad" placeholder="What did you accomplish today? What needs work?" disabled></textarea>
+          <textarea id="review-text" class="scratchpad" placeholder="What did you accomplish today? What needs work?"
+            disabled></textarea>
         </div>
       </div>
     </div>
@@ -366,7 +452,9 @@
     <div class="cal-modal">
       <div class="cal-modal-date" id="cal-modal-date">May 12, 2026</div>
       <div class="cal-modal-score" id="cal-modal-score">0% — No Data</div>
-      <div class="cal-modal-bar-wrap"><div class="cal-modal-bar" id="cal-modal-bar" style="width:0%"></div></div>
+      <div class="cal-modal-bar-wrap">
+        <div class="cal-modal-bar" id="cal-modal-bar" style="width:0%"></div>
+      </div>
       <div class="cal-modal-summary" id="cal-modal-summary">No activity recorded for this day.</div>
       <button class="cal-modal-close" onclick="closeDayDetail()">Close</button>
     </div>
@@ -378,17 +466,23 @@
       <div class="cal-modal-date" style="display:flex; align-items:center; gap:8px;">
         <span>📊 Weekly Intelligence</span>
       </div>
-      <div class="cal-modal-score tier-purple" style="font-size:12px; margin-bottom:16px;">Last 30 Days Deep Analysis</div>
-      
-      <div id="weekly-report-container" style="font-size:12px; color:rgba(255,255,255,0.85); line-height:1.65; max-height:50vh; overflow-y:auto; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:16px; border-radius:12px; margin-bottom:16px; text-align:left;">
-        <span style="color:rgba(255,255,255,0.4); font-style:italic;">No report compiled yet. Click below to generate analysis.</span>
+      <div class="cal-modal-score tier-purple" style="font-size:12px; margin-bottom:16px;">Last 30 Days Deep Analysis
       </div>
-      
+
+      <div id="weekly-report-container"
+        style="font-size:12px; color:rgba(255,255,255,0.85); line-height:1.65; max-height:50vh; overflow-y:auto; background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); padding:16px; border-radius:12px; margin-bottom:16px; text-align:left;">
+        <span style="color:rgba(255,255,255,0.4); font-style:italic;">No report compiled yet. Click below to generate
+          analysis.</span>
+      </div>
+
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <button onclick="generateWeeklyReport(true)" class="btn-generate-report" id="btn-trigger-report" style="padding:12px; font-size:13px; font-weight:700; border-radius:12px; background:linear-gradient(135deg, #a855f7, #7c3aed); border:none; color:#fff; cursor:pointer; box-shadow:0 4px 15px rgba(168,85,247,0.3); transition:all 0.2s;">
+        <button onclick="generateWeeklyReport(true)" class="btn-generate-report" id="btn-trigger-report"
+          style="padding:12px; font-size:13px; font-weight:700; border-radius:12px; background:linear-gradient(135deg, #a855f7, #7c3aed); border:none; color:#fff; cursor:pointer; box-shadow:0 4px 15px rgba(168,85,247,0.3); transition:all 0.2s;">
           ⚡ Run Analysis
         </button>
-        <button class="cal-modal-close" style="margin-top:0; padding:12px; font-size:13px; font-weight:700; border-radius:12px;" onclick="closeAnalytics()">
+        <button class="cal-modal-close"
+          style="margin-top:0; padding:12px; font-size:13px; font-weight:700; border-radius:12px;"
+          onclick="closeAnalytics()">
           Close
         </button>
       </div>
@@ -398,24 +492,58 @@
   <script src="app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(function(){});
+      navigator.serviceWorker.register('sw.js').catch(function () { });
     }
-  </script>  <!-- FAB: Floating Quick Control (mobile only) -->
-  <div id="fab-overlay" onclick="closeFAB()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998;"></div>
+  </script> <!-- FAB: Floating Quick Control (mobile only) -->
+  <div id="fab-overlay" onclick="closeFAB()"
+    style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998;"></div>
   <div id="fab-panel" class="fab-panel">
-    <div class="fab-panel-title">Quick Control <span id="sync-st-fab" style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace; margin-left:8px;"></span></div>
+    <div class="fab-panel-title">Quick Control <span id="sync-st-fab"
+        style="font-size:11px; font-weight:500; color:rgba(255,255,255,0.4); font-family:monospace; margin-left:8px;"></span>
+    </div>
     <div class="fab-panel-buttons">
-      <button class="action-btn btn-sync" onclick="saveState(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></span>Save &amp; Sync</button>
-      <button class="action-btn btn-pull" onclick="pullFromCloud(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 14l8 6 8-6"/><path d="M4 10l8-6 8 6"/></svg></span>Pull Cloud</button>
-      <button class="action-btn btn-clear" onclick="resetDailies(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>Reset Dailies</button>
-      <button class="action-btn btn-analytics" onclick="openAnalytics(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>Analytics &amp; AI</button>
-      <button class="action-btn btn-backup" onclick="exportBackup(); closeFAB();"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>Export Backup</button>
-      <label class="action-btn btn-import"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>Import Backup<input type="file" accept=".json" onchange="importBackup(event); closeFAB();" style="display:none"></label>
+      <button class="action-btn btn-sync" onclick="saveState(); closeFAB();"><span class="btn-icon"><svg
+            viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12" />
+          </svg></span>Save &amp; Sync</button>
+      <button class="action-btn btn-pull" onclick="pullFromCloud(); closeFAB();"><span class="btn-icon"><svg
+            viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M4 14l8 6 8-6" />
+            <path d="M4 10l8-6 8 6" />
+          </svg></span>Pull Cloud</button>
+      <button class="action-btn btn-clear" onclick="resetDailies(); closeFAB();"><span class="btn-icon"><svg
+            viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg></span>Reset Dailies</button>
+      <button class="action-btn btn-analytics" onclick="openAnalytics(); closeFAB();"><span class="btn-icon"><svg
+            viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M18 20V10M12 20V4M6 20v-6" />
+          </svg></span>Analytics &amp; AI</button>
+      <button class="action-btn btn-backup" onclick="exportBackup(); closeFAB();"><span class="btn-icon"><svg
+            viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg></span>Export Backup</button>
+      <label class="action-btn btn-import"><span class="btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff"
+            stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg></span>Import Backup<input type="file" accept=".json" onchange="importBackup(event); closeFAB();"
+          style="display:none"></label>
     </div>
   </div>
   <button id="fab-btn" class="fab-btn" onclick="toggleFAB()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="4" r="2"/><circle cx="12" cy="20" r="2"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+      <circle cx="12" cy="12" r="3" />
+      <circle cx="12" cy="4" r="2" />
+      <circle cx="12" cy="20" r="2" />
+    </svg>
   </button>
 
 </body>
+
 </html>

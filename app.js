@@ -420,162 +420,13 @@ function getDayTierLabel(pct) {
 }
 
 function renderMonth() {
-  // Update title
-  var titleEl = document.getElementById('cal-month-title');
-  if (titleEl) titleEl.textContent = MONTH_NAME + ' ' + CURRENT_YEAR;
-  
-  var startDay = getMonthStartDay();
-  var h = '';
-  
-  // Add empty spacers for days before the 1st
-  for (var s = 0; s < startDay; s++) {
-    h += '<div class="cal-empty"></div>';
-  }
-  
-  // Add day cells
-  S.month.forEach(function(pct, i) {
-    var dayNum = i + 1;
-    var isToday = dayNum === TODAY_DAY;
-    var isFuture = dayNum > TODAY_DAY;
-    var tier = getDayTier(pct);
-    
-    var classes = 'cal-day';
-    if (tier) classes += ' ' + tier;
-    if (isToday) classes += ' cal-today';
-    if (isFuture) classes += ' cal-future';
-    
-    var clickHandler = isFuture ? '' : ' onclick="openDayDetail(' + i + ')"';
-    
-    h += '<div class="' + classes + '"' + clickHandler + '>' +
-      '<span class="cal-day-num">' + dayNum + '</span>' +
-      '<span class="cal-dot"></span>' +
-      '</div>';
-  });
-  
-  document.getElementById('mgrid').innerHTML = h;
-  
-  // Update stats
-  var productiveDays = S.month.filter(function(p) { return p >= 70; }).length;
-  var statsEl = document.getElementById('cal-stats');
-  if (statsEl) statsEl.textContent = productiveDays + ' productive day' + (productiveDays !== 1 ? 's' : '');
+  renderCalView();
 }
 
 function openDayDetail(idx) {
-  var pct = S.month[idx] || 0;
-  var dayNum = idx + 1;
-  var dateObj = new Date(CURRENT_YEAR, CURRENT_MONTH, dayNum);
-  var dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  
-  var tierInfo = getDayTierLabel(pct);
-  
-  document.getElementById('cal-modal-date').textContent = dateStr;
-  
-  var scoreEl = document.getElementById('cal-modal-score');
-  scoreEl.textContent = tierInfo.text;
-  scoreEl.className = 'cal-modal-score ' + tierInfo.cls;
-  
-  document.getElementById('cal-modal-bar').style.width = pct + '%';
-  
-  var dayKey = "rd-v7-" + CURRENT_YEAR + "-" + (CURRENT_MONTH + 1) + "-" + dayNum;
-  var hist = S.history ? S.history[dayKey] : null;
-  
-  // Summary text
-  var summary = '';
-  if (dayNum === TODAY_DAY) {
-    var total = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
-    var done = countDailies();
-    var listHTML = '<ul style="margin:8px 0; padding-left:20px; list-style:none; font-size:13px; line-height:1.6;">';
-    
-    if (S.dailyMode === 'custom') {
-      S.customDailies.forEach(function(d) {
-        listHTML += '<li><span style="display:inline-block; width:20px;">' + (d.d ? '✅' : '❌') + '</span> ' + d.n + '</li>';
-      });
-    } else {
-      DAILIES.forEach(function(d, idx) {
-        listHTML += '<li><span style="display:inline-block; width:20px;">' + (S.dailies[idx] ? '✅' : '❌') + '</span> ' + d + '</li>';
-      });
-    }
-    listHTML += '</ul>';
-    
-    summary = '<div style="font-size:14px; color:#fff; font-weight:600;">Today: ' + done + '/' + total + ' dailies completed.</div>' + listHTML;
-  } else if (hist) {
-    var sectionStyle = 'margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1);';
-    var labelStyle = 'font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;';
-    var listHTML = '';
-    
-    // DAILIES SECTION
-    if (hist.dailies && hist.dailies.length > 0) {
-      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Dailies</div>';
-      listHTML += '<ul style="margin:0; padding-left:0; list-style:none; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.7);">';
-      if (hist.dailyMode === "custom") {
-        hist.dailies.forEach(function(d) {
-          listHTML += '<li><span style="display:inline-block; width:18px;">' + (d.d ? '✅' : '❌') + '</span> ' + d.n + '</li>';
-        });
-      } else {
-        hist.dailies.forEach(function(done, idx) {
-          var dName = DAILIES[idx] || "Task";
-          listHTML += '<li><span style="display:inline-block; width:18px;">' + (done ? '✅' : '❌') + '</span> ' + dName + '</li>';
-        });
-      }
-      listHTML += '</ul></div>';
-    }
-    
-    // MATH PROGRESS SECTION
-    var mathHTML = '';
-    if (hist.mathSem3) {
-      var sem3Done = hist.mathSem3.filter(Boolean).length;
-      mathHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px;">Sem 3 Backlogs: <strong style="color:#a855f7;">' + sem3Done + '/' + MATH_SEM3_ALL.length + '</strong> topics done</div>';
-    }
-    if (hist.mathSem1) {
-      var sem1Done = hist.mathSem1.filter(Boolean).length;
-      mathHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px;">Sem 1 Backlogs: <strong style="color:#e8a0bf;">' + sem1Done + '/' + MATH_SEM1_ALL.length + '</strong> topics done</div>';
-    }
-    if (hist.sem4) {
-      var sem4Total = 0; var sem4Done = 0;
-      ['dscc5','dscc6','dscc7','dscc8'].forEach(function(p) {
-        if (hist.sem4[p]) { sem4Total += hist.sem4[p].length; sem4Done += hist.sem4[p].filter(function(t){return t.d;}).length; }
-      });
-      if (sem4Total > 0) mathHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px;">Sem 4 Tasks: <strong style="color:#2ecc40;">' + sem4Done + '/' + sem4Total + '</strong> completed</div>';
-    }
-    if (mathHTML) {
-      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Math Progress</div>' + mathHTML + '</div>';
-    }
-    
-    // PROGRESS SLIDERS
-    if (hist.fsVid !== undefined || hist.pyVid !== undefined) {
-      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Study Progress</div>';
-      listHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6);">Full Stack: <strong style="color:#2ecc40;">' + (hist.fsVid || 0) + '%</strong> · Python: <strong style="color:#f1c40f;">' + (hist.pyVid || 0) + '%</strong></div></div>';
-    }
-    
-    // EXERCISES
-    if (hist.exercises && hist.exercises.length > 0) {
-      var exDone = hist.exercises.filter(function(e){return e.done;}).length;
-      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Workout (' + exDone + '/' + hist.exercises.length + ')</div>';
-      listHTML += '<ul style="margin:0; padding-left:0; list-style:none; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.7);">';
-      hist.exercises.forEach(function(e) {
-        listHTML += '<li><span style="display:inline-block; width:18px;">' + (e.done ? '✅' : '❌') + '</span> ' + e.n + ' <span style="color:rgba(255,255,255,0.3);">' + e.s + '</span></li>';
-      });
-      listHTML += '</ul></div>';
-    }
-    
-    // END OF DAY REVIEW
-    var reviewText = hist.review ? hist.review : "";
-    if (reviewText) {
-      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">End of Day Review</div>';
-      listHTML += '<div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:8px; border-left:3px solid #a855f7; color:#e0c3fc; font-style:italic; font-size:13px;">"' + reviewText + '"</div></div>';
-    }
-    
-    summary = '<div style="font-size:14px; color:#fff; font-weight:600;">Achieved ' + pct + '% of goals</div>' + listHTML;
-  } else if (pct > 0) {
-    summary = '<div style="font-size:14px; color:#fff; font-weight:600;">You achieved ' + pct + '% of your daily goals.</div><div style="font-size:12px; margin-top:8px; color:rgba(255,255,255,0.4);">(Legacy data — no detailed snapshot available)</div>';
-  } else {
-    summary = 'No activity was recorded for this day.';
-  }
-  document.getElementById('cal-modal-summary').innerHTML = summary;
-  
-  document.getElementById('cal-modal-overlay').classList.add('active');
+  openCalDayDetail(idx + 1, CURRENT_MONTH, CURRENT_YEAR);
 }
-
+  
 function closeDayDetail(e) {
   if (e && e.target && e.target.id === 'cal-modal-overlay') {
     document.getElementById('cal-modal-overlay').classList.remove('active');
@@ -1392,8 +1243,11 @@ function loadState() {
       }
       
       if (!loaded.dailyMode) loaded.dailyMode = "default";
-      if (!loaded.customDailies || loaded.customDailies.length === 0 || loaded.customDailies[0].n === "Wake up on time") {
-        // Initialize custom dailies with default DAILIES
+      // Detect and migrate old default custom dailies (old list had 'Python' and 'Break 15 min')
+      var hasOldDefaults = !loaded.customDailies || loaded.customDailies.length === 0 ||
+        loaded.customDailies[0].n === "Wake up on time" ||
+        (loaded.customDailies.some(function(d){ return d.n === 'Python' || d.n === 'Break 15 min'; }));
+      if (hasOldDefaults) {
         loaded.customDailies = JSON.parse(JSON.stringify(DEFAULT_CUSTOM_DAILIES));
       }
       
@@ -1414,6 +1268,136 @@ function loadState() {
 }
 
 loadState();
+
+// ── CALENDAR MONTH NAVIGATION ──
+var calViewYear = CURRENT_YEAR;
+var calViewMonth = CURRENT_MONTH;
+
+function calNavMonth(dir) {
+  calViewMonth += dir;
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  renderCalView();
+}
+
+function renderCalView() {
+  var isCurrentMonth = (calViewYear === CURRENT_YEAR && calViewMonth === CURRENT_MONTH);
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var titleEl = document.getElementById('cal-month-title');
+  if (titleEl) titleEl.textContent = monthNames[calViewMonth] + ' ' + calViewYear;
+
+  var daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+  var startDow = new Date(calViewYear, calViewMonth, 1).getDay();
+  var startDay = startDow === 0 ? 6 : startDow - 1;
+
+  var h = '';
+  for (var s = 0; s < startDay; s++) h += '<div class="cal-empty"></div>';
+
+  for (var d = 1; d <= daysInMonth; d++) {
+    var dayKey = 'rd-v7-' + calViewYear + '-' + (calViewMonth + 1) + '-' + d;
+    var hist = S.history ? S.history[dayKey] : null;
+    var pct = 0;
+    var isToday = isCurrentMonth && d === TODAY_DAY;
+    var isFuture = isCurrentMonth && d > TODAY_DAY;
+
+    if (isToday) {
+      var cnt = countDailies();
+      var total = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
+      pct = Math.round((cnt / total) * 100);
+    } else if (hist) {
+      pct = hist.pct || 0;
+    } else if (isCurrentMonth) {
+      pct = S.month[d - 1] || 0;
+    }
+
+    var tier = getDayTier(pct);
+    var classes = 'cal-day' + (tier ? ' ' + tier : '') + (isToday ? ' cal-today' : '') + (isFuture ? ' cal-future' : '');
+    var click = isFuture ? '' : ' onclick="openCalDayDetail(' + d + ',' + calViewMonth + ',' + calViewYear + ')"';
+    h += '<div class="' + classes + '"' + click + '>' +
+      '<span class="cal-day-num">' + d + '</span>' +
+      '<span class="cal-dot"></span>' +
+      '</div>';
+  }
+
+  document.getElementById('mgrid').innerHTML = h;
+  var productiveDays = 0;
+  for (var dd = 1; dd <= daysInMonth; dd++) {
+    var k = 'rd-v7-' + calViewYear + '-' + (calViewMonth + 1) + '-' + dd;
+    var h2 = S.history ? S.history[k] : null;
+    var p = h2 ? h2.pct : (isCurrentMonth ? (S.month[dd-1] || 0) : 0);
+    if (p >= 70) productiveDays++;
+  }
+  var statsEl = document.getElementById('cal-stats');
+  if (statsEl) statsEl.textContent = productiveDays + ' productive day' + (productiveDays !== 1 ? 's' : '');
+}
+
+function openCalDayDetail(dayNum, month, year) {
+  var isCurrentMonth = (year === CURRENT_YEAR && month === CURRENT_MONTH);
+  var dayKey = 'rd-v7-' + year + '-' + (month + 1) + '-' + dayNum;
+  var hist = S.history ? S.history[dayKey] : null;
+  var pct = 0;
+  if (isCurrentMonth && dayNum === TODAY_DAY) {
+    var cnt = countDailies();
+    var total = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
+    pct = Math.round((cnt / total) * 100);
+  } else if (hist) {
+    pct = hist.pct || 0;
+  } else if (isCurrentMonth) {
+    pct = S.month[dayNum - 1] || 0;
+  }
+  // Reuse openDayDetail with a temporary index trick
+  var dateObj = new Date(year, month, dayNum);
+  var dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  var tierInfo = getDayTierLabel(pct);
+  document.getElementById('cal-modal-date').textContent = dateStr;
+  var scoreEl = document.getElementById('cal-modal-score');
+  scoreEl.textContent = tierInfo.text;
+  scoreEl.className = 'cal-modal-score ' + tierInfo.cls;
+  document.getElementById('cal-modal-bar').style.width = pct + '%';
+
+  // Build summary using hist if available
+  var isToday = isCurrentMonth && dayNum === TODAY_DAY;
+  // Borrow the existing summary builder — temporarily store vars
+  var _tmpMonth = CURRENT_MONTH; var _tmpYear = CURRENT_YEAR;
+  // Directly build summary
+  var summary = '';
+  var sectionStyle = 'margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1);';
+  var labelStyle = 'font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;';
+
+  if (isToday) {
+    var total2 = S.dailyMode === 'custom' ? Math.max(1, S.customDailies.length) : DAILIES.length;
+    var done2 = countDailies();
+    var lh = '<ul style="margin:8px 0; padding-left:0; list-style:none; font-size:13px; line-height:1.6;">';
+    if (S.dailyMode === 'custom') {
+      S.customDailies.forEach(function(d) { lh += '<li><span style="display:inline-block;width:20px;">' + (d.d ? '\u2705' : '\u274c') + '</span> ' + d.n + '</li>'; });
+    } else {
+      DAILIES.forEach(function(d, i) { lh += '<li><span style="display:inline-block;width:20px;">' + (S.dailies[i] ? '\u2705' : '\u274c') + '</span> ' + d + '</li>'; });
+    }
+    lh += '</ul>';
+    summary = '<div style="font-size:14px;color:#fff;font-weight:600;">Today: ' + done2 + '/' + total2 + ' dailies completed.</div>' + lh;
+  } else if (hist) {
+    var lHTML = '';
+    if (hist.dailies && hist.dailies.length > 0) {
+      lHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Dailies</div><ul style="margin:0;padding-left:0;list-style:none;font-size:12px;line-height:1.6;color:rgba(255,255,255,0.7);">';
+      if (hist.dailyMode === 'custom') {
+        hist.dailies.forEach(function(d) { lHTML += '<li><span style="display:inline-block;width:18px;">' + (d.d ? '\u2705' : '\u274c') + '</span> ' + d.n + '</li>'; });
+      } else {
+        hist.dailies.forEach(function(done, i) { lHTML += '<li><span style="display:inline-block;width:18px;">' + (done ? '\u2705' : '\u274c') + '</span> ' + (DAILIES[i] || 'Task') + '</li>'; });
+      }
+      lHTML += '</ul></div>';
+    }
+    if (hist.mathSem3) { var s3 = hist.mathSem3.filter(Boolean).length; lHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Math Progress</div><div style="font-size:12px;color:rgba(255,255,255,0.6);">Sem 3: <strong style="color:#a855f7;">' + s3 + '/' + MATH_SEM3_ALL.length + '</strong></div></div>'; }
+    if (hist.review) { lHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Review</div><div style="background:rgba(0,0,0,0.3);padding:10px 12px;border-radius:8px;border-left:3px solid #a855f7;color:#e0c3fc;font-style:italic;font-size:13px;">"' + hist.review + '"</div></div>'; }
+    summary = '<div style="font-size:14px;color:#fff;font-weight:600;">Achieved ' + pct + '% of goals</div>' + lHTML;
+  } else if (pct > 0) {
+    summary = '<div style="font-size:14px;color:#fff;font-weight:600;">Achieved ' + pct + '%</div><div style="font-size:12px;margin-top:8px;color:rgba(255,255,255,0.4);">(No detailed diary snapshot available)</div>';
+  } else {
+    summary = 'No activity was recorded for this day.';
+  }
+  document.getElementById('cal-modal-summary').innerHTML = summary;
+  document.getElementById('cal-modal-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
 
 // ── FAB FUNCTIONS ──
 function toggleFAB() {

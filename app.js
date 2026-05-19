@@ -13,12 +13,12 @@ const DAILIES = [
 ];
 const DEFAULT_CUSTOM_DAILIES = [
   { n: "Wake up", t: "07:00 AM", d: false },
-  { n: "Workout", t: "08:00 AM", d: false },
-  { n: "Reading", t: "09:00 AM", d: false },
-  { n: "Python", t: "01:00 PM", d: false },
-  { n: "Break 15 min", t: "04:00 PM", d: false },
-  { n: "Revise", t: "06:00 PM", d: false },
-  { n: "Break", t: "09:00 PM", d: false },
+  { n: "Sem 4 Class 1", t: "10:30 AM", d: false },
+  { n: "Sem 4 Class 2", t: "12:30 PM", d: false },
+  { n: "Sem 3 Backlog", t: "02:30 PM", d: false },
+  { n: "Workout", t: "04:00 PM", d: false },
+  { n: "Coding Session", t: "06:00 PM", d: false },
+  { n: "Reading", t: "09:00 PM", d: false },
   { n: "Sleep", t: "10:30 PM", d: false }
 ];
 
@@ -499,13 +499,13 @@ function openDayDetail(idx) {
     
     summary = '<div style="font-size:14px; color:#fff; font-weight:600;">Today: ' + done + '/' + total + ' dailies completed.</div>' + listHTML;
   } else if (hist) {
-    var reviewText = hist.review ? hist.review : "No review written.";
-    var listHTML = '<div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1);">';
-    listHTML += '<div style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;">End of Day Review</div>';
-    listHTML += '<div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:8px; border-left:3px solid #a855f7; color:#e0c3fc; font-style:italic; font-size:13px;">"' + reviewText + '"</div></div>';
+    var sectionStyle = 'margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.1);';
+    var labelStyle = 'font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;';
+    var listHTML = '';
     
+    // DAILIES SECTION
     if (hist.dailies && hist.dailies.length > 0) {
-      listHTML += '<div style="margin-top:14px;"><div style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.3); margin-bottom:6px; font-weight:700;">Dailies</div>';
+      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Dailies</div>';
       listHTML += '<ul style="margin:0; padding-left:0; list-style:none; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.7);">';
       if (hist.dailyMode === "custom") {
         hist.dailies.forEach(function(d) {
@@ -518,6 +518,51 @@ function openDayDetail(idx) {
         });
       }
       listHTML += '</ul></div>';
+    }
+    
+    // MATH PROGRESS SECTION
+    var mathHTML = '';
+    if (hist.mathSem3) {
+      var sem3Done = hist.mathSem3.filter(Boolean).length;
+      mathHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px;">Sem 3 Backlogs: <strong style="color:#a855f7;">' + sem3Done + '/' + MATH_SEM3_ALL.length + '</strong> topics done</div>';
+    }
+    if (hist.mathSem1) {
+      var sem1Done = hist.mathSem1.filter(Boolean).length;
+      mathHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px;">Sem 1 Backlogs: <strong style="color:#e8a0bf;">' + sem1Done + '/' + MATH_SEM1_ALL.length + '</strong> topics done</div>';
+    }
+    if (hist.sem4) {
+      var sem4Total = 0; var sem4Done = 0;
+      ['dscc5','dscc6','dscc7','dscc8'].forEach(function(p) {
+        if (hist.sem4[p]) { sem4Total += hist.sem4[p].length; sem4Done += hist.sem4[p].filter(function(t){return t.d;}).length; }
+      });
+      if (sem4Total > 0) mathHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6); margin-bottom:4px;">Sem 4 Tasks: <strong style="color:#2ecc40;">' + sem4Done + '/' + sem4Total + '</strong> completed</div>';
+    }
+    if (mathHTML) {
+      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Math Progress</div>' + mathHTML + '</div>';
+    }
+    
+    // PROGRESS SLIDERS
+    if (hist.fsVid !== undefined || hist.pyVid !== undefined) {
+      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Study Progress</div>';
+      listHTML += '<div style="font-size:12px; color:rgba(255,255,255,0.6);">Full Stack: <strong style="color:#2ecc40;">' + (hist.fsVid || 0) + '%</strong> · Python: <strong style="color:#f1c40f;">' + (hist.pyVid || 0) + '%</strong></div></div>';
+    }
+    
+    // EXERCISES
+    if (hist.exercises && hist.exercises.length > 0) {
+      var exDone = hist.exercises.filter(function(e){return e.done;}).length;
+      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">Workout (' + exDone + '/' + hist.exercises.length + ')</div>';
+      listHTML += '<ul style="margin:0; padding-left:0; list-style:none; font-size:12px; line-height:1.6; color:rgba(255,255,255,0.7);">';
+      hist.exercises.forEach(function(e) {
+        listHTML += '<li><span style="display:inline-block; width:18px;">' + (e.done ? '✅' : '❌') + '</span> ' + e.n + ' <span style="color:rgba(255,255,255,0.3);">' + e.s + '</span></li>';
+      });
+      listHTML += '</ul></div>';
+    }
+    
+    // END OF DAY REVIEW
+    var reviewText = hist.review ? hist.review : "";
+    if (reviewText) {
+      listHTML += '<div style="' + sectionStyle + '"><div style="' + labelStyle + '">End of Day Review</div>';
+      listHTML += '<div style="background:rgba(0,0,0,0.3); padding:10px 12px; border-radius:8px; border-left:3px solid #a855f7; color:#e0c3fc; font-style:italic; font-size:13px;">"' + reviewText + '"</div></div>';
     }
     
     summary = '<div style="font-size:14px; color:#fff; font-weight:600;">Achieved ' + pct + '% of goals</div>' + listHTML;
@@ -815,18 +860,22 @@ function saveState(skipCloud) {
   S.savedMonth = CURRENT_MONTH;
   S.lastModified = Date.now();
   
-  // Track history for today
+  // Track history for today — COMPLETE diary snapshot
   if (!S.history) S.history = {};
   var cnt = countDailies();
   var total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
   S.history[TODAY_KEY] = {
     pct: Math.round((cnt / total) * 100),
     review: S.review || "",
+    scratchpad: S.scratchpad || "",
     fsVid: S.fsVid,
     pyVid: S.pyVid,
     exercises: JSON.parse(JSON.stringify(S.exercises || [])),
     dailyMode: S.dailyMode,
-    dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || []))
+    dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || [])),
+    mathSem3: JSON.parse(JSON.stringify(S.mathSem3 || [])),
+    mathSem1: JSON.parse(JSON.stringify(S.mathSem1 || [])),
+    sem4: JSON.parse(JSON.stringify(S.sem4 || {}))
   };
 
   try {
@@ -1238,6 +1287,20 @@ async function sendAI() {
   updateAIStatus();
 }
 
+// === HISTORY PRUNING (keep max 90 days) ===
+function pruneHistory() {
+  if (!S.history) return;
+  var keys = Object.keys(S.history);
+  if (keys.length <= 90) return;
+  keys.sort(function(a, b) {
+    var pA = a.replace('rd-v7-', '').split('-').map(Number);
+    var pB = b.replace('rd-v7-', '').split('-').map(Number);
+    return new Date(pA[0], pA[1]-1, pA[2]) - new Date(pB[0], pB[1]-1, pB[2]);
+  });
+  var toRemove = keys.length - 90;
+  for (var i = 0; i < toRemove; i++) delete S.history[keys[i]];
+}
+
 function loadState() {
   try {
     var json = localStorage.getItem("rudranil-v7");
@@ -1299,6 +1362,7 @@ function loadState() {
       for (var key in loaded) { S[key] = loaded[key]; }
     }
   } catch(e) {}
+  pruneHistory();
   renderAll();
   initScratchpad();
   initReview();

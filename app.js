@@ -688,9 +688,41 @@ function updV(id, v) {
   updStats(); saveState();
 }
 
-// ── STREAK (disabled) ──
-function renderStreak() {}
-function calcStreak() {}
+// ── STREAK ENGINE ──
+function calcStreak() {
+  if (!S.history) { S.streak = 0; return; }
+  var streak = 0;
+  var d = new Date(CURRENT_YEAR, CURRENT_MONTH, TODAY_DAY);
+  // Start from yesterday (today is still in progress)
+  d.setDate(d.getDate() - 1);
+  for (var i = 0; i < 365; i++) {
+    var key = "rd-v7-" + d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    var h = S.history[key];
+    if (h && h.pct >= 70) {
+      streak++;
+      d.setDate(d.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+  // Include today if already >= 70%
+  var cnt = countDailies();
+  var total = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+  if (Math.round((cnt / total) * 100) >= 70) streak++;
+  S.streak = streak;
+}
+
+function renderStreak() {
+  var badge = document.getElementById("streak-badge");
+  if (!badge) return;
+  if (S.streak > 0) {
+    badge.style.display = "inline-block";
+    var emoji = S.streak >= 30 ? "💎" : S.streak >= 7 ? "🔥" : "⚡";
+    badge.textContent = emoji + " " + S.streak + " day streak";
+  } else {
+    badge.style.display = "none";
+  }
+}
 
 // ── PENDING BANNER ──
 function renderPending() {
@@ -735,13 +767,19 @@ function renderReview(pct) {
   var inner = document.getElementById("review-inner");
   var msg = document.getElementById("review-lock-msg");
   var textarea = document.getElementById("review-text");
-  if (pct >= 100) {
+  var hour = new Date().getHours();
+  // Unlock at 50% completion OR after 8 PM
+  if (pct >= 50 || hour >= 20) {
     inner.className = "tasks-inner review-unlocked";
-    msg.textContent = "\u2705 Unlocked! Write your review.";
+    if (hour >= 20 && pct < 50) {
+      msg.textContent = "🌙 Evening unlock. Reflect on your day.";
+    } else {
+      msg.textContent = "✅ Unlocked! Write your review.";
+    }
     textarea.disabled = false;
   } else {
     inner.className = "tasks-inner review-locked";
-    msg.textContent = "Complete 100% dailies to unlock (" + pct + "%)";
+    msg.textContent = "Complete 50% dailies to unlock (" + pct + "%)";
     textarea.disabled = true;
   }
   textarea.value = S.review || "";
@@ -797,12 +835,11 @@ function importBackup(event) {
 function pushToAndroid() {
   try {
     var dailiesDone = countDailies();
-    var dailiesTotal = DAILIES.length;
-    var semLeft = S.semD.filter(function(d) { return !d; }).length;
-    var exLeft = S.exercises.filter(function(e) { return !e.done; }).length;
-    var affLeft = S.affD.filter(function(d) { return !d; }).length;
-    var tasksLeft = semLeft + exLeft + affLeft + (dailiesTotal - dailiesDone);
-    var data = { fsPercent: S.fsVid, pyPercent: S.pyVid, dailiesDone: dailiesDone, dailiesTotal: dailiesTotal, tasksLeft: tasksLeft };
+    var dailiesTotal = S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length;
+    var exLeft = S.exercises ? S.exercises.filter(function(e) { return !e.done; }).length : 0;
+    var sem3Left = S.mathSem3 ? S.mathSem3.filter(function(d) { return !d; }).length : 0;
+    var tasksLeft = exLeft + sem3Left + (dailiesTotal - dailiesDone);
+    var data = { fsPercent: S.fsVid, pyPercent: S.pyVid, dailiesDone: dailiesDone, dailiesTotal: dailiesTotal, tasksLeft: tasksLeft, streak: S.streak || 0 };
     if (typeof AndroidBridge !== "undefined" && AndroidBridge.updateMetrics) {
       AndroidBridge.updateMetrics(JSON.stringify(data));
     }
@@ -865,7 +902,7 @@ function renderPPLIndicator() {
 }
 
 // === MINI GEMINI AI ===
-const GEMINI_KEY = "AIzaSyB1QaBA1uSXjq7sc6oxiZ1NWz5hmeE94vk";
+const GEMINI_KEY = ""; // User must set their own key via Settings
 let aiHistory = [];
 
 function toggleSettingsSetup() {
@@ -1179,10 +1216,30 @@ async function sendAI() {
     var currentList = S.exercises.map(function(e) { return e.n + " (" + e.s + ")"; }).join(", ");
     if (!currentList) currentList = "Empty";
     
+    // Build rich context for the AI
+    var todayPct = Math.round(countDailies() / (S.dailyMode === "custom" ? Math.max(1, S.customDailies.length) : DAILIES.length) * 100);
+    var sem3Done = S.mathSem3 ? S.mathSem3.filter(Boolean).length : 0;
+    var sem1Done = S.mathSem1 ? S.mathSem1.filter(Boolean).length : 0;
+    var contextStr = "You are Rudranil's personal life AI assistant (not just workouts)." +
+      "\n\n--- LIVE DASHBOARD CONTEXT ---" +
+      "\nToday's productivity: " + todayPct + "%" +
+      "\nStreak: " + (S.streak || 0) + " days" +
+      "\nWorkout list: " + currentList +
+      "\nToday's workout type: " + getTodayPPL() + " Day" +
+      "\nSem 3 backlogs: " + sem3Done + "/" + MATH_SEM3_ALL.length + " done" +
+      "\nSem 1 backlogs: " + sem1Done + "/" + MATH_SEM1_ALL.length + " done" +
+      "\n4th Sem tasks: " + JSON.stringify(S.sem4) +
+      "\nScratchpad: " + (S.scratchpad || "empty") +
+      "\nLast review: " + (S.review || "none") +
+      "\n--- END CONTEXT ---" +
+      "\n\nTo modify his workout, output JSON: ```json [{\"action\":\"add\", \"name\":\"Squats\", \"sets\":\"3x10\"}, {\"action\":\"delete\", \"name\":\"Push-ups\"}] ```." +
+      "\nTo add a 4th sem task, output JSON: ```json [{\"action\":\"add_sem4\", \"paper\":\"dscc5\", \"name\":\"Read chapter 1\"}] ``` (Papers available: dscc5, dscc6, dscc7, dscc8)." +
+      "\nOnly output JSON if modifying state. Keep regular text replies concise (2-3 sentences max).";
+    
     var reqBody = {
       contents: aiHistory,
       systemInstruction: {
-        parts: [{text: "You are Rudranil's productivity AI assistant. \nHis current workout list contains: " + currentList + ".\nHis 4th Sem tasks are: " + JSON.stringify(S.sem4) + "\nTo modify his workout, output JSON: ```json [{\"action\":\"add\", \"name\":\"Squats\", \"sets\":\"3x10\"}, {\"action\":\"delete\", \"name\":\"Push-ups\"}] ```.\nTo add a 4th sem task, output JSON: ```json [{\"action\":\"add_sem4\", \"paper\":\"dscc5\", \"name\":\"Read chapter 1\"}] ``` (Papers available: dscc5, dscc6, dscc7, dscc8).\nOnly output JSON if modifying state. Keep regular text replies under 2 sentences."}]
+        parts: [{text: contextStr}]
       }
     };
     
@@ -1236,6 +1293,26 @@ async function sendAI() {
   }
   
   updateAIStatus();
+}
+
+// === HISTORY PRUNING (keep max 90 days) ===
+function pruneHistory() {
+  if (!S.history) return;
+  var keys = Object.keys(S.history);
+  if (keys.length <= 90) return;
+  // Sort keys by date, oldest first
+  keys.sort(function(a, b) {
+    var partsA = a.replace('rd-v7-', '').split('-').map(Number);
+    var partsB = b.replace('rd-v7-', '').split('-').map(Number);
+    var dA = new Date(partsA[0], partsA[1] - 1, partsA[2]);
+    var dB = new Date(partsB[0], partsB[1] - 1, partsB[2]);
+    return dA - dB;
+  });
+  var toRemove = keys.length - 90;
+  for (var i = 0; i < toRemove; i++) {
+    delete S.history[keys[i]];
+  }
+  console.log("[History] Pruned " + toRemove + " old entries. Keeping 90 days.");
 }
 
 function loadState() {
@@ -1299,6 +1376,7 @@ function loadState() {
       for (var key in loaded) { S[key] = loaded[key]; }
     }
   } catch(e) {}
+  pruneHistory();
   renderAll();
   initScratchpad();
   initReview();

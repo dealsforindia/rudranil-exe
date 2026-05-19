@@ -1034,6 +1034,39 @@ async function pullFromCloud() {
       _isPulling = false;
       return;
     }
+
+    // === TIMESTAMP-BASED SMART MERGE ===
+    var cloudTime = cloudS.lastModified || 0;
+    var localTime = S.lastModified || 0;
+    if (cloudTime > localTime) {
+      // Cloud is newer — apply cloud data
+      console.log("[Sync] Cloud is newer (cloud: " + new Date(cloudTime).toLocaleTimeString() + " vs local: " + new Date(localTime).toLocaleTimeString() + "). Pulling.");
+      var localAi = S.aiKey;
+      var localToken = S.gistToken;
+      var localId = S.gistId;
+      S = cloudS;
+      // Restore local-only secrets
+      S.aiKey = localAi;
+      S.gistToken = localToken;
+      S.gistId = localId;
+      renderAll();
+      // Save locally WITHOUT pushing back to avoid loop
+      S.savedKey = TODAY_KEY;
+      S.savedMonth = CURRENT_MONTH;
+    }
+    // Ensure pull flag reset even on successful merge
+    _isPulling = false;
+    updateSyncIndicator("in-sync");
+    updateCloudStatus("Synced");
+  } catch (e) {
+    console.error("Pull error:", e);
+    updateSyncIndicator("error");
+    updateCloudStatus("Pull Error", true);
+    _isPulling = false;
+  } finally {
+    // Guarantee pull flag reset if not already
+    _isPulling = false;
+  }
     
     // === TIMESTAMP-BASED SMART MERGE ===
     var cloudTime = cloudS.lastModified || 0;

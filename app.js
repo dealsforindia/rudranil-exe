@@ -381,7 +381,7 @@ function renderSem3() {
   var fluidPct = document.getElementById("fluid-sem3-pct");
   if (fluidPct) fluidPct.textContent = pct3 + '%';
 }
-function togSem3(i) { S.mathSem3[i] = !S.mathSem3[i]; renderSem3(); updStats(); saveState(); }
+function togSem3(i) { S.mathSem3[i] = !S.mathSem3[i]; renderSem3(); updStats(); checkTopicOfDay(true); saveState(); }
 
 // === SEM 1 BACKLOG RENDERING ===
 function renderSem1Group(id, topics, offset) {
@@ -1649,38 +1649,20 @@ async function checkMorningBrief() {
 }
 
 function checkTopicOfDay(force) {
-  var todayStr = TODAY_KEY;
-  
-  if (S.lastTopicDate !== todayStr || force) {
-    var found = false;
-    for (var i = S.topicOfDayIndex; i < MATH_SEM3_ALL.length; i++) {
-      if (!S.mathSem3[i]) {
-        S.topicOfDayIndex = i;
-        found = true;
-        break;
-      }
-    }
-    if (!found) {
-      for (var i = 0; i < MATH_SEM3_ALL.length; i++) {
-        if (!S.mathSem3[i]) {
-          S.topicOfDayIndex = i;
-          found = true;
-          break;
-        }
-      }
-    }
-    if (found && !force) {
-      S.lastTopicDate = todayStr;
-      saveState(true);
+  var foundIdx = -1;
+  for (var i = 0; i < MATH_SEM3_ALL.length; i++) {
+    if (!S.mathSem3[i]) {
+      foundIdx = i;
+      break;
     }
   }
   
   var btn = document.getElementById("topic-of-day-btn");
   if (!btn) return;
   
-  var currIdx = S.topicOfDayIndex;
-  if (currIdx >= 0 && currIdx < MATH_SEM3_ALL.length && !S.mathSem3[currIdx]) {
-    var topicName = MATH_SEM3_ALL[currIdx];
+  if (foundIdx !== -1) {
+    S.topicOfDayIndex = foundIdx;
+    var topicName = MATH_SEM3_ALL[foundIdx];
     btn.textContent = "📖 Today: " + topicName;
     btn.style.display = "inline-block";
     btn.style.cursor = "pointer";
@@ -1689,7 +1671,7 @@ function checkTopicOfDay(force) {
     btn.style.color = "#e0c3fc";
     btn.onclick = function() {
       if (confirm('Mark "' + topicName + '" as completed?')) {
-        S.mathSem3[currIdx] = true;
+        S.mathSem3[foundIdx] = true;
         renderSem3();
         updStats();
         checkTopicOfDay(true);
@@ -1697,42 +1679,12 @@ function checkTopicOfDay(force) {
       }
     };
   } else {
-    var allDone = S.mathSem3.filter(Boolean).length === MATH_SEM3_ALL.length;
-    if (allDone) {
-      btn.textContent = "✅ All Sem 3 topics complete!";
-      btn.onclick = null;
-      btn.style.cursor = "default";
-      btn.style.background = "rgba(46,204,64,0.15)";
-      btn.style.borderColor = "rgba(46,204,64,0.3)";
-      btn.style.color = "#86efac";
-    } else {
-      var foundNext = false;
-      for (var i = 0; i < MATH_SEM3_ALL.length; i++) {
-        if (!S.mathSem3[i]) {
-          S.topicOfDayIndex = i;
-          foundNext = true;
-          break;
-        }
-      }
-      if (foundNext) {
-        var nextTopic = MATH_SEM3_ALL[S.topicOfDayIndex];
-        btn.textContent = "📖 Today: " + nextTopic;
-        btn.style.display = "inline-block";
-        btn.style.cursor = "pointer";
-        btn.style.background = "rgba(168,85,247,0.15)";
-        btn.style.borderColor = "rgba(168,85,247,0.3)";
-        btn.style.color = "#e0c3fc";
-        btn.onclick = function() {
-          if (confirm('Mark "' + nextTopic + '" as completed?')) {
-            S.mathSem3[S.topicOfDayIndex] = true;
-            renderSem3();
-            updStats();
-            checkTopicOfDay(true);
-            saveState();
-          }
-        };
-      }
-    }
+    btn.textContent = "✅ All Sem 3 topics complete!";
+    btn.onclick = null;
+    btn.style.cursor = "default";
+    btn.style.background = "rgba(46,204,64,0.15)";
+    btn.style.borderColor = "rgba(46,204,64,0.3)";
+    btn.style.color = "#86efac";
   }
 }
 

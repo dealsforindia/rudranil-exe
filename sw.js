@@ -1,5 +1,5 @@
-var CACHE = 'rudranil-v34';
-var FILES = ['./index.html', './style.css', './app.js'];
+var CACHE = 'rudranil-v35';
+var FILES = ['./index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(caches.open(CACHE).then(function(cache) { return cache.addAll(FILES); }));

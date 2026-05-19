@@ -818,7 +818,6 @@ input[type=range]::-webkit-slider-thumb:active { transform:scale(1.2); }
   .fab-btn { display: flex; }
   .fab-panel { display: block; }
   .fab-panel.open { transform: translateY(0); }
-}
   /* Month Grid */
   .month-label { margin-top:16px; font-size:11px; }
   .month-grid { gap:4px; margin-top:8px; }

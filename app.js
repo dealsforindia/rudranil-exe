@@ -1267,7 +1267,7 @@ function loadState() {
   }
 }
 
-loadState();
+
 
 // ── CALENDAR MONTH NAVIGATION ──
 var calViewYear = CURRENT_YEAR;
@@ -1413,3 +1413,5 @@ function closeFAB() {
   document.getElementById('fab-panel').classList.remove('open');
   document.getElementById('fab-overlay').style.display = 'none';
 }
+
+loadState();

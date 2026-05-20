@@ -329,9 +329,25 @@ function renderSem4() {
              '<div style="flex:1; height:8px; border-radius:4px; background:rgba(255,255,255,0.06); overflow:hidden;">' +
                '<div style="height:100%; width:' + pct + '%; ' + barColor + ' transition: width 0.3s ease;"></div>' +
              '</div>' +
-             '<div style="display:flex; gap:6px;">' +
-               '<button onclick="changeDscc(\'' + p.id + '\', -1)" style="width:28px; height:28px; border-radius:8px; border:none; background:rgba(255,255,255,0.08); color:#fff; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">−</button>' +
-               '<button onclick="changeDscc(\'' + p.id + '\', 1)" style="width:28px; height:28px; border-radius:8px; border:none; background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.3); color:#e0c3fc; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">+</button>' +
+              '<div style="display:flex; gap:6px;">' +
+               '<button ' +
+                 'onmousedown="startHoldDsccTotal(\'' + p.id + '\', -1)" ' +
+                 'onmouseup="cancelHoldDsccTotal()" ' +
+                 'onmouseleave="cancelHoldDsccTotal()" ' +
+                 'ontouchstart="startHoldDsccTotal(\'' + p.id + '\', -1)" ' +
+                 'ontouchend="cancelHoldDsccTotal()" ' +
+                 'ontouchcancel="cancelHoldDsccTotal()" ' +
+                 'onclick="handleDsccClick(\'' + p.id + '\', -1)" ' +
+                 'style="width:28px; height:28px; border-radius:8px; border:none; background:rgba(255,255,255,0.08); color:#fff; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">−</button>' +
+               '<button ' +
+                 'onmousedown="startHoldDsccTotal(\'' + p.id + '\', 1)" ' +
+                 'onmouseup="cancelHoldDsccTotal()" ' +
+                 'onmouseleave="cancelHoldDsccTotal()" ' +
+                 'ontouchstart="startHoldDsccTotal(\'' + p.id + '\', 1)" ' +
+                 'ontouchend="cancelHoldDsccTotal()" ' +
+                 'ontouchcancel="cancelHoldDsccTotal()" ' +
+                 'onclick="handleDsccClick(\'' + p.id + '\', 1)" ' +
+                 'style="width:28px; height:28px; border-radius:8px; border:none; background:rgba(168,85,247,0.2); border:1px solid rgba(168,85,247,0.3); color:#e0c3fc; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">+</button>' +
              '</div>' +
            '</div>' +
          '</div>';
@@ -348,6 +364,51 @@ function changeDscc(id, diff) {
   var newVal = curr + diff;
   if (newVal >= 0 && newVal <= total) {
     S.dsccWatched[id] = newVal;
+    renderSem4();
+    updStats();
+    debouncedSave();
+  }
+}
+
+let holdTimer = null;
+let longPressFired = false;
+
+function startHoldDsccTotal(id, delta) {
+  longPressFired = false;
+  if (holdTimer) clearTimeout(holdTimer);
+  holdTimer = setTimeout(function() {
+    longPressFired = true;
+    changeDsccTotal(id, delta);
+    if (navigator.vibrate) navigator.vibrate(50);
+  }, 600);
+}
+
+function cancelHoldDsccTotal() {
+  if (holdTimer) {
+    clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+}
+
+function handleDsccClick(id, delta) {
+  if (longPressFired) {
+    longPressFired = false;
+    return;
+  }
+  changeDscc(id, delta);
+}
+
+function changeDsccTotal(id, delta) {
+  var curr = S.dsccTotal[id] || 1;
+  var newVal = curr + delta;
+  if (newVal >= 1) { // Total shouldn't go below 1
+    S.dsccTotal[id] = newVal;
+    
+    // Ensure watched doesn't exceed new total
+    if ((S.dsccWatched[id] || 0) > newVal) {
+      S.dsccWatched[id] = newVal;
+    }
+    
     renderSem4();
     updStats();
     debouncedSave();

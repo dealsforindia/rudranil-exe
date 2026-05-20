@@ -1616,11 +1616,19 @@ function getDaysRemaining(dateStr) {
 }
 
 function renderExamTimers() {
-  var sem4Days = getDaysRemaining(S.sem4ExamDate || "2026-06-15");
-  var sem3Days = getDaysRemaining(S.sem3ExamDate || "2027-01-15");
+  var sem4Date = S.sem4ExamDate || "2026-06-15";
+  var sem3Date = S.sem3ExamDate || "2027-01-15";
+  var sem4Days = getDaysRemaining(sem4Date);
+  var sem3Days = getDaysRemaining(sem3Date);
   
   updateTimerElement("sem4-days", sem4Days);
   updateTimerElement("sem3-days", sem3Days);
+  
+  // Update date labels dynamically
+  var sem4Label = document.getElementById("sem4-date-label");
+  var sem3Label = document.getElementById("sem3-date-label");
+  if (sem4Label) sem4Label.textContent = new Date(sem4Date + "T00:00:00").toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  if (sem3Label) sem3Label.textContent = new Date(sem3Date + "T00:00:00").toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
 
 function updateTimerElement(id, days) {

@@ -716,12 +716,7 @@ function calcStreak() {
 function renderStreak() {
   var el = document.getElementById("hero-sub");
   if (!el) return;
-  if (S.streak > 0) {
-    var emoji = S.streak >= 30 ? "💎" : S.streak >= 7 ? "🔥" : "⚡";
-    el.textContent = emoji + " " + S.streak + " day streak";
-  } else {
-    el.textContent = "completed";
-  }
+  el.textContent = "completed";
 }
 
 // ── PENDING BANNER ──

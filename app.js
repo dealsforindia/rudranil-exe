@@ -142,6 +142,7 @@ function updStats() {
   document.getElementById("py-slider").value = S.pyVid;
 
   // Streak
+  calcStreak();
   renderStreak();
   // Pending
   renderPending();

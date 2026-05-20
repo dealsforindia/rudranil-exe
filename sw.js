@@ -1,4 +1,4 @@
-var CACHE = 'rudranil-v43';
+var CACHE = 'rudranil-v44';
 var FILES = ['./index.html', './style.css', './app.js', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', function(e) {

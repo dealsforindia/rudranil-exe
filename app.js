@@ -761,11 +761,7 @@ function saveReviewOnly() {
     exercises: JSON.parse(JSON.stringify(S.exercises || [])),
     dailyMode: S.dailyMode,
     dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || [])),
-    mathSem3: JSON.parse(JSON.stringify(S.mathSem3 || [])),
-    mathSem1: JSON.parse(JSON.stringify(S.mathSem1 || [])),
-    sem4: JSON.parse(JSON.stringify(S.sem4 || {})),
-    dsccWatched: JSON.parse(JSON.stringify(S.dsccWatched || {dscc5:0, dscc6:2, dscc7:0, dscc8:0})),
-    dsccTotal: JSON.parse(JSON.stringify(S.dsccTotal || {dscc5:8, dscc6:7, dscc7:12, dscc8:6}))
+    dsccWatched: JSON.parse(JSON.stringify(S.dsccWatched || {dscc5:0, dscc6:2, dscc7:0, dscc8:0}))
   };
   
   // Directly save to localStorage and trigger sync debounce
@@ -884,11 +880,7 @@ function saveState(skipCloud) {
     exercises: JSON.parse(JSON.stringify(S.exercises || [])),
     dailyMode: S.dailyMode,
     dailies: S.dailyMode === "custom" ? JSON.parse(JSON.stringify(S.customDailies || [])) : JSON.parse(JSON.stringify(S.dailies || [])),
-    mathSem3: JSON.parse(JSON.stringify(S.mathSem3 || [])),
-    mathSem1: JSON.parse(JSON.stringify(S.mathSem1 || [])),
-    sem4: JSON.parse(JSON.stringify(S.sem4 || {})),
-    dsccWatched: JSON.parse(JSON.stringify(S.dsccWatched || {dscc5:0, dscc6:2, dscc7:0, dscc8:0})),
-    dsccTotal: JSON.parse(JSON.stringify(S.dsccTotal || {dscc5:8, dscc6:7, dscc7:12, dscc8:6}))
+    dsccWatched: JSON.parse(JSON.stringify(S.dsccWatched || {dscc5:0, dscc6:2, dscc7:0, dscc8:0}))
   };
 
   try {

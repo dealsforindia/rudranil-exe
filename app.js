@@ -883,6 +883,8 @@ function toggleSettingsSetup() {
   if (S.aiKey) document.getElementById("ai-key-input").value = S.aiKey;
   if (S.firebaseUrl) document.getElementById("firebase-url-input").value = S.firebaseUrl;
   if (S.firebaseKey) document.getElementById("firebase-key-input").value = S.firebaseKey;
+  if (S.sem4ExamDate) document.getElementById("sem4-date-input").value = S.sem4ExamDate;
+  if (S.sem3ExamDate) document.getElementById("sem3-date-input").value = S.sem3ExamDate;
 }
 
 function updateCloudStatus(msg, err) {
@@ -1085,7 +1087,14 @@ function saveSettings() {
   S.aiKey = document.getElementById("ai-key-input").value.trim();
   S.firebaseUrl = document.getElementById("firebase-url-input").value.trim();
   S.firebaseKey = document.getElementById("firebase-key-input").value.trim();
+  
+  var sem4Input = document.getElementById("sem4-date-input").value;
+  var sem3Input = document.getElementById("sem3-date-input").value;
+  if (sem4Input) S.sem4ExamDate = sem4Input;
+  if (sem3Input) S.sem3ExamDate = sem3Input;
+  
   saveState();
+  renderAll(); // Re-render to update the countdowns
   toggleSettingsSetup();
   if (S.firebaseUrl) {
     initFirebase();

@@ -253,6 +253,19 @@
               <input type="password" id="firebase-key-input" class="add-task-input" placeholder="Firebase API Key"
                 style="margin-top:0; flex:1; font-family:monospace;">
             </div>
+            
+            <div style="font-size:11px; color:rgba(255,255,255,0.5); margin-bottom:4px; margin-top:12px; font-weight:600;">📅 Exam Dates</div>
+            <div class="ai-input-row" style="margin-bottom:8px; display:flex; gap:8px;">
+              <div style="flex:1;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.4); margin-bottom:2px; text-transform:uppercase;">Sem 4</div>
+                <input type="date" id="sem4-date-input" class="add-task-input" style="margin-top:0; width:100%; font-family:monospace; font-size:11px; padding:6px 10px;">
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:10px; color:rgba(255,255,255,0.4); margin-bottom:2px; text-transform:uppercase;">Sem 3</div>
+                <input type="date" id="sem3-date-input" class="add-task-input" style="margin-top:0; width:100%; font-family:monospace; font-size:11px; padding:6px 10px;">
+              </div>
+            </div>
+
             <div class="ai-input-row" style="margin-top:4px;">
               <button class="ai-send-btn" onclick="saveSettings()"
                 style="padding:8px 12px; font-size:12px; border-radius:8px; width:100%;">Save Settings & Sync</button>

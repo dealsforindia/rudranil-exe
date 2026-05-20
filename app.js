@@ -1263,8 +1263,8 @@ function loadState() {
       if (typeof loaded.scratchpad === 'undefined') loaded.scratchpad = "";
       if (typeof loaded.review === 'undefined') loaded.review = "";
       if (typeof loaded.aiKey === 'undefined') loaded.aiKey = "";
-      if (typeof loaded.firebaseUrl === 'undefined') loaded.firebaseUrl = "";
-      if (typeof loaded.firebaseKey === 'undefined') loaded.firebaseKey = "";
+      if (typeof loaded.firebaseUrl === 'undefined' || loaded.firebaseUrl === "") loaded.firebaseUrl = "https://rudranil-exe-default-rtdb.firebaseio.com";
+      if (typeof loaded.firebaseKey === 'undefined' || loaded.firebaseKey === "") loaded.firebaseKey = "AIzaSyAZAxQrfX8d36MMaTZrKcJAYuS9n8HLdQ";
       if (typeof loaded.lastModified === 'undefined') loaded.lastModified = 0;
       if (typeof loaded.history === 'undefined') loaded.history = {};
       // Ensure month array matches current month length

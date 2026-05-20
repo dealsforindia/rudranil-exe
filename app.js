@@ -731,7 +731,6 @@ function renderPending() {
   } else {
     DAILIES.forEach(function(d, i) { if (!S.dailies[i]) items.push(d); });
   }
-  if (S.sem && S.semD) S.sem.forEach(function(t, i) { if (!S.semD[i]) items.push(t); });
   if (S.exercises) S.exercises.forEach(function(e) { if (!e.done) items.push(e.n); });
   var banner = document.getElementById("pending-banner");
   var list = document.getElementById("pending-list");
